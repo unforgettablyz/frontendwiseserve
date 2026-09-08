@@ -93,6 +93,11 @@ export default function App() {
     setIsLoading(true);
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setIsLoading(false);
+  };
+
   if (!isAuthenticated) {
     return (
       <Login
@@ -115,6 +120,7 @@ export default function App() {
       language={language}
       setLanguage={setLanguage}
       companyName={selectedCompany}
+      onLogout={handleLogout}
     >
       {isLoading && activeTab === "dashboard" && (
         <DashboardSkeleton theme={theme} />

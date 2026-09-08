@@ -19,6 +19,7 @@ interface HeaderProps {
   language?: Language;
   setLanguage?: Dispatch<SetStateAction<Language>>;
   companyName: string;
+  onLogout: () => void;
 }
 
 export const Header = ({
@@ -29,10 +30,12 @@ export const Header = ({
   language = "en",
   setLanguage,
   companyName,
+  onLogout,
 }: HeaderProps) => {
   const isDark = theme === "dark";
   const isBM = language === "bm";
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [profileName, setProfileName] = useState(user);
   const [profileEmail, setProfileEmail] = useState("manager@wiseserve.com");
 
@@ -108,36 +111,82 @@ export const Header = ({
           {isDark ? "☀️" : "🌙"}
         </button>
 
-        <button
-          type="button"
-          onClick={() => setIsProfileOpen(true)}
-          aria-label="Open edit profile"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl border shadow-sm ${
-            isDark
-              ? "bg-slate-800/90 border-slate-700"
-              : "bg-slate-100/90 border-slate-200"
-          } transition-all hover:-translate-y-0.5 hover:shadow-md`}
-        >
-          <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#dbeafe] to-[#bfdbfe] text-[#1d4ed8] text-xs flex items-center justify-center font-semibold shadow-inner">
-              {profileName.charAt(0).toUpperCase()}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+            aria-expanded={isProfileMenuOpen}
+            aria-haspopup="menu"
+            aria-label="Open profile menu"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl border shadow-sm ${
+              isDark
+                ? "bg-slate-800/90 border-slate-700"
+                : "bg-slate-100/90 border-slate-200"
+            } transition-all hover:-translate-y-0.5 hover:shadow-md`}
+          >
+            <div className="relative">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#dbeafe] to-[#bfdbfe] text-[#1d4ed8] text-xs flex items-center justify-center font-semibold shadow-inner">
+                {profileName.charAt(0).toUpperCase()}
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-100 bg-emerald-500" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-100 bg-emerald-500" />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">
-              {isBM ? "Pengguna" : "User"}
+            <div className="flex flex-col leading-none">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                {isBM ? "Pengguna" : "User"}
+              </span>
+              <span
+                className={`text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}
+              >
+                {profileName}
+              </span>
+            </div>
+            <span className="ml-1 text-xs text-slate-400" aria-hidden="true">
+              ⌄
             </span>
-            <span
-              className={`text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}
+          </button>
+
+          {isProfileMenuOpen && (
+            <div
+              className={`absolute right-0 top-full z-30 mt-2 w-44 rounded-2xl border p-1.5 shadow-xl ${
+                isDark
+                  ? "border-slate-700 bg-slate-900"
+                  : "border-slate-200 bg-white"
+              }`}
+              role="menu"
             >
-              {profileName}
-            </span>
-          </div>
-          <span className="ml-1 text-xs text-slate-400" aria-hidden="true">
-            ⌄
-          </span>
-        </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  setIsProfileOpen(true);
+                }}
+                className={`w-full rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                  isDark
+                    ? "text-slate-200 hover:bg-slate-800"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                Edit Profile
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  onLogout();
+                }}
+                className={`w-full rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                  isDark
+                    ? "text-red-300 hover:bg-red-500/10"
+                    : "text-red-600 hover:bg-red-50"
+                }`}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <Modal
