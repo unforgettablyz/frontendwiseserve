@@ -12,12 +12,53 @@ export const DailyLog = ({ theme = "light" }: DailyLogProps) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
   );
+  const [savedMessage, setSavedMessage] = useState("");
+  const [quantities, setQuantities] = useState<
+    Record<number, { prepared: string; sold: string; leftover: string }>
+  >({});
 
   const mockItems = [
     { id: 1, name: "Chicken Teriyaki Bento", price: "$12.50" },
     { id: 2, name: "Salmon Sashimi Plate", price: "$16.00" },
     { id: 3, name: "Green Tea Ice Cream", price: "$4.50" },
   ];
+
+  const updateQuantity = (
+    id: number,
+    field: "prepared" | "sold" | "leftover",
+    value: string,
+  ) => {
+    setQuantities((current) => ({
+      ...current,
+      [id]: {
+        prepared: "",
+        sold: "",
+        leftover: "",
+        ...current[id],
+        [field]: value,
+      },
+    }));
+  };
+
+  const saveLog = () => {
+    const existingLogs = JSON.parse(
+      window.localStorage.getItem("wiseserve-daily-logs") ?? "[]",
+    );
+    const entries = mockItems.map((item) => ({
+      date: selectedDate,
+      item: item.name,
+      prepared: Number(quantities[item.id]?.prepared ?? 0),
+      sold: Number(quantities[item.id]?.sold ?? 0),
+      leftover: Number(quantities[item.id]?.leftover ?? 0),
+    }));
+    window.localStorage.setItem(
+      "wiseserve-daily-logs",
+      JSON.stringify([...existingLogs, ...entries]),
+    );
+    setSavedMessage(
+      `Saved ${entries.length} menu records for ${selectedDate}.`,
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -43,7 +84,12 @@ export const DailyLog = ({ theme = "light" }: DailyLogProps) => {
                 : "bg-white border-slate-200 text-slate-700"
             }`}
           />
-          <Button theme={theme}>Save Log Entry</Button>
+          <Button theme={theme} onClick={saveLog}>
+            Save Log Entry
+          </Button>
+          {savedMessage && (
+            <span className="text-xs text-emerald-500">{savedMessage}</span>
+          )}
         </div>
       </div>
 
@@ -84,6 +130,10 @@ export const DailyLog = ({ theme = "light" }: DailyLogProps) => {
                   <input
                     type="number"
                     min="0"
+                    value={quantities[item.id]?.prepared ?? ""}
+                    onChange={(event) =>
+                      updateQuantity(item.id, "prepared", event.target.value)
+                    }
                     placeholder="0"
                     className={`w-full rounded-xl px-3 py-2 text-sm outline-none border ${
                       isDark
@@ -96,6 +146,10 @@ export const DailyLog = ({ theme = "light" }: DailyLogProps) => {
                   <input
                     type="number"
                     min="0"
+                    value={quantities[item.id]?.sold ?? ""}
+                    onChange={(event) =>
+                      updateQuantity(item.id, "sold", event.target.value)
+                    }
                     placeholder="0"
                     className={`w-full rounded-xl px-3 py-2 text-sm outline-none border ${
                       isDark
@@ -108,6 +162,10 @@ export const DailyLog = ({ theme = "light" }: DailyLogProps) => {
                   <input
                     type="number"
                     min="0"
+                    value={quantities[item.id]?.leftover ?? ""}
+                    onChange={(event) =>
+                      updateQuantity(item.id, "leftover", event.target.value)
+                    }
                     placeholder="0"
                     className={`w-full rounded-xl px-3 py-2 text-sm outline-none border ${
                       isDark

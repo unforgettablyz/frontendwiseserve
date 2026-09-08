@@ -12,6 +12,8 @@ interface SidebarProps {
   language?: Language;
   companyName: string;
   onClose: () => void;
+  outlets: string[];
+  onOutletChange: (outlet: string) => void;
 }
 
 export const Sidebar = ({
@@ -21,6 +23,8 @@ export const Sidebar = ({
   language = "en",
   companyName,
   onClose,
+  outlets,
+  onOutletChange,
 }: SidebarProps) => {
   const isDark = theme === "dark";
   const labels: Record<Language, Record<Tab, string>> = {
@@ -107,12 +111,18 @@ export const Sidebar = ({
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
             {language === "bm" ? "Ruang kerja" : "Current workspace"}
           </p>
-          <p
-            className={`mt-1 truncate text-sm font-semibold ${isDark ? "text-slate-100" : "text-slate-800"}`}
-            title={companyName}
+          <select
+            value={companyName}
+            onChange={(event) => onOutletChange(event.target.value)}
+            aria-label="Select outlet"
+            className={`workspace-select mt-1 w-full truncate bg-transparent text-sm font-semibold outline-none ${isDark ? "workspace-select-dark text-slate-100" : "workspace-select-light text-slate-800"}`}
           >
-            {companyName}
-          </p>
+            {outlets.map((outlet) => (
+              <option key={outlet} value={outlet}>
+                {outlet}
+              </option>
+            ))}
+          </select>
         </div>
 
         <nav className="flex flex-col gap-2" aria-label="Main navigation">

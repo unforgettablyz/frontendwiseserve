@@ -10,4 +10,22 @@
     background: #171c26;
     color: #e2e8f0;
   }
+
+  .workspace-select-dark {
+    color-scheme: dark;
+  }
+
+  .workspace-select-dark option {
+    background: #111827;
+    color: #e2e8f0;
+  }
+
+  .workspace-select-light {
+    color-scheme: light;
+  }
+
+  .workspace-select-light option {
+    background: #ffffff;
+    color: #1e293b;
+  }
 }

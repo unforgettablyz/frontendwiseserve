@@ -3,8 +3,10 @@ type Theme = "light" | "dark";
 interface DashboardProps {
   theme?: Theme;
   language?: "en" | "bm";
+  companyName?: string;
 }
 
+import { useState } from "react";
 import { Card } from "../ui/Card";
 import {
   Area,
@@ -25,8 +27,9 @@ import {
   ZAxis,
 } from "recharts";
 
-export const Dashboard = ({ theme = "light" }: DashboardProps) => {
+export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
   const isDark = theme === "dark";
+  const [dateRange, setDateRange] = useState("7");
 
   const mockMetrics = [
     {
@@ -75,6 +78,11 @@ export const Dashboard = ({ theme = "light" }: DashboardProps) => {
     { day: "Sat", sales: 3100, waste: 210 },
     { day: "Sun", sales: 2600, waste: 150 },
   ];
+
+  const visibleWeeklyData =
+    dateRange === "30"
+      ? [...weeklyData, ...weeklyData.slice(0, 2)]
+      : weeklyData;
 
   const revenueTrend = [
     { week: "W1", revenue: 8200, target: 9000 },
@@ -173,6 +181,33 @@ export const Dashboard = ({ theme = "light" }: DashboardProps) => {
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs text-slate-400">
+            {companyName ?? "Current outlet"}
+          </p>
+          <p
+            className={`text-sm font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}
+          >
+            Showing the last {dateRange === "all" ? "90" : dateRange} days
+          </p>
+        </div>
+        <select
+          value={dateRange}
+          onChange={(event) => setDateRange(event.target.value)}
+          aria-label="Filter dashboard date range"
+          className={`rounded-xl border px-3 py-2 text-sm outline-none ${
+            isDark
+              ? "border-slate-700 bg-slate-800 text-slate-200"
+              : "border-slate-200 bg-white text-slate-700"
+          }`}
+        >
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="all">All activity</option>
+        </select>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {mockMetrics.map((m, idx) => (
           <Card key={idx} theme={theme} className="flex flex-col gap-3">
@@ -216,7 +251,7 @@ export const Dashboard = ({ theme = "light" }: DashboardProps) => {
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={weeklyData}
+                data={visibleWeeklyData}
                 margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
               >
                 <CartesianGrid

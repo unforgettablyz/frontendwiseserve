@@ -22,6 +22,8 @@ interface AppLayoutProps {
   setLanguage: Dispatch<SetStateAction<Language>>;
   companyName: string;
   onLogout: () => void;
+  outlets: string[];
+  onOutletChange: (outlet: string) => void;
 }
 
 export const AppLayout = ({
@@ -35,6 +37,8 @@ export const AppLayout = ({
   setLanguage,
   companyName,
   onLogout,
+  outlets,
+  onOutletChange,
 }: AppLayoutProps) => {
   const isDark = theme === "dark";
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -55,6 +59,8 @@ export const AppLayout = ({
           language={language}
           companyName={companyName}
           onClose={() => setIsSidebarOpen(false)}
+          outlets={outlets}
+          onOutletChange={onOutletChange}
         />
       )}
       <div className="flex-1 flex flex-col overflow-hidden">
