@@ -11,6 +11,39 @@
     color: #e2e8f0;
   }
 
+  .dashboard-filter {
+    @apply rounded-xl border px-3 py-2 text-sm outline-none transition-colors;
+    border-color: #334155;
+    background: #1e293b;
+    color: #e2e8f0;
+    color-scheme: dark;
+  }
+
+  .dashboard-filter:focus {
+    border-color: #60a5fa;
+  }
+
+  .dashboard-filter option {
+    background: #111827;
+    color: #e2e8f0;
+  }
+
+  .dashboard-filter-light {
+    border-color: #e2e8f0;
+    background: #ffffff;
+    color: #334155;
+    color-scheme: light;
+  }
+
+  .dashboard-filter-light:focus {
+    border-color: #3b82f6;
+  }
+
+  .dashboard-filter-light option {
+    background: #ffffff;
+    color: #1e293b;
+  }
+
   .workspace-select-dark {
     color-scheme: dark;
   }

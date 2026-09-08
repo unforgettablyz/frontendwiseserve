@@ -30,6 +30,9 @@ import {
 export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
   const isDark = theme === "dark";
   const [dateRange, setDateRange] = useState("7");
+  const [wasteReason, setWasteReason] = useState("all");
+  const [menuItem, setMenuItem] = useState("all");
+  const [highWasteOnly, setHighWasteOnly] = useState(false);
 
   const mockMetrics = [
     {
@@ -152,6 +155,16 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
     },
   ];
 
+  const filteredProfitabilityData = profitabilityData.filter(
+    (item) =>
+      (menuItem === "all" || item.name === menuItem) &&
+      (!highWasteOnly || item.waste >= 20),
+  );
+  const filteredWasteBreakdown =
+    wasteReason === "all"
+      ? wasteBreakdown
+      : wasteBreakdown.filter((entry) => entry.name === wasteReason);
+
   const recommendations = [
     {
       priority: "Highest impact",
@@ -181,7 +194,7 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs text-slate-400">
             {companyName ?? "Current outlet"}
@@ -192,20 +205,59 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
             Showing the last {dateRange === "all" ? "90" : dateRange} days
           </p>
         </div>
-        <select
-          value={dateRange}
-          onChange={(event) => setDateRange(event.target.value)}
-          aria-label="Filter dashboard date range"
-          className={`rounded-xl border px-3 py-2 text-sm outline-none ${
-            isDark
-              ? "border-slate-700 bg-slate-800 text-slate-200"
-              : "border-slate-200 bg-white text-slate-700"
-          }`}
-        >
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="all">All activity</option>
-        </select>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <select
+            value={dateRange}
+            onChange={(event) => setDateRange(event.target.value)}
+            aria-label="Filter dashboard date range"
+            className={`rounded-xl border px-3 py-2 text-sm outline-none ${
+              isDark
+                ? "border-slate-700 bg-slate-800 text-slate-200"
+                : "border-slate-200 bg-white text-slate-700"
+            }`}
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="all">All activity</option>
+          </select>
+          <select
+            value={wasteReason}
+            onChange={(event) => setWasteReason(event.target.value)}
+            aria-label="Filter by waste reason"
+            className={`dashboard-filter ${isDark ? "" : "dashboard-filter-light"}`}
+          >
+            <option value="all">All waste reasons</option>
+            {wasteBreakdown.map((entry) => (
+              <option key={entry.name} value={entry.name}>
+                {entry.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={menuItem}
+            onChange={(event) => setMenuItem(event.target.value)}
+            aria-label="Filter by menu item"
+            className={`dashboard-filter ${isDark ? "" : "dashboard-filter-light"}`}
+          >
+            <option value="all">All menu items</option>
+            {profitabilityData.map((item) => (
+              <option key={item.name} value={item.name}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+          <label
+            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${isDark ? "border-slate-700 text-slate-300" : "border-slate-200 text-slate-600"}`}
+          >
+            <input
+              type="checkbox"
+              checked={highWasteOnly}
+              onChange={(event) => setHighWasteOnly(event.target.checked)}
+              className="accent-rose-500"
+            />
+            High waste only
+          </label>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -461,7 +513,7 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={wasteBreakdown}
+                  data={filteredWasteBreakdown}
                   dataKey="value"
                   nameKey="name"
                   innerRadius={52}
@@ -469,7 +521,7 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
                   paddingAngle={3}
                   stroke="none"
                 >
-                  {wasteBreakdown.map((entry) => (
+                  {filteredWasteBreakdown.map((entry) => (
                     <Cell
                       key={entry.name}
                       fill={isDark ? entry.darkColor : entry.lightColor}
@@ -615,8 +667,8 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
                   ]}
                   labelFormatter={(label) => String(label)}
                 />
-                <Scatter data={profitabilityData} name="Menu items">
-                  {profitabilityData.map((item) => (
+                <Scatter data={filteredProfitabilityData} name="Menu items">
+                  {filteredProfitabilityData.map((item) => (
                     <Cell key={item.name} fill={item.color} />
                   ))}
                 </Scatter>
@@ -630,7 +682,7 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               <span>Margin</span>
               <span>Waste</span>
             </div>
-            {profitabilityData.map((item) => (
+            {filteredProfitabilityData.map((item) => (
               <div
                 key={item.name}
                 className={`grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-2xl border px-3 py-3 text-xs ${
