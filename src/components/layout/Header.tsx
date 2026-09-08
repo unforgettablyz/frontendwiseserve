@@ -20,6 +20,8 @@ interface HeaderProps {
   setLanguage?: Dispatch<SetStateAction<Language>>;
   companyName: string;
   onLogout: () => void;
+  onOpenSidebar: () => void;
+  isSidebarOpen: boolean;
 }
 
 export const Header = ({
@@ -31,6 +33,8 @@ export const Header = ({
   setLanguage,
   companyName,
   onLogout,
+  onOpenSidebar,
+  isSidebarOpen,
 }: HeaderProps) => {
   const isDark = theme === "dark";
   const isBM = language === "bm";
@@ -53,6 +57,31 @@ export const Header = ({
       }`}
     >
       <div>
+        {!isSidebarOpen && (
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            aria-label="Open sidebar"
+            title="Open sidebar"
+            className={`mb-2 flex h-8 w-8 items-center justify-center rounded-xl border text-lg leading-none transition-colors ${
+              isDark
+                ? "border-slate-700 text-slate-300 hover:bg-slate-800"
+                : "border-slate-200 text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-4 w-4"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="M9 4v16M12 12l3-3m-3 3 3 3" />
+            </svg>
+          </button>
+        )}
         <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">
           {isBM ? "Operasi" : "Operations"}
         </p>

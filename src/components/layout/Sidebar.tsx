@@ -11,6 +11,7 @@ interface SidebarProps {
   theme?: Theme;
   language?: Language;
   companyName: string;
+  onClose: () => void;
 }
 
 export const Sidebar = ({
@@ -19,6 +20,7 @@ export const Sidebar = ({
   theme = "light",
   language = "en",
   companyName,
+  onClose,
 }: SidebarProps) => {
   const isDark = theme === "dark";
   const labels: Record<Language, Record<Tab, string>> = {
@@ -58,9 +60,9 @@ export const Sidebar = ({
       }`}
     >
       <div>
-        <div className="flex items-center gap-3 px-2 mb-8">
+        <div className="mb-8 flex items-center gap-3 px-2">
           <BrandMark />
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">
               F&B
             </p>
@@ -70,6 +72,29 @@ export const Sidebar = ({
               WiseServe
             </span>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close sidebar"
+            title="Close sidebar"
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border text-lg leading-none transition-colors ${
+              isDark
+                ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+                : "border-[#d9e4f2] text-slate-500 hover:bg-white hover:text-slate-900"
+            }`}
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-4 w-4"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="M9 4v16M15 12l-3-3m3 3-3 3" />
+            </svg>
+          </button>
         </div>
 
         <div

@@ -1,4 +1,9 @@
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import {
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 
@@ -32,6 +37,7 @@ export const AppLayout = ({
   onLogout,
 }: AppLayoutProps) => {
   const isDark = theme === "dark";
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div
@@ -41,13 +47,16 @@ export const AppLayout = ({
           : "bg-[radial-gradient(circle_at_top_left,_#f8fbff_0%,_#f3f5f9_30%,_#eef2f7_100%)] text-slate-800"
       }`}
     >
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        theme={theme}
-        language={language}
-        companyName={companyName}
-      />
+      {isSidebarOpen && (
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          theme={theme}
+          language={language}
+          companyName={companyName}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      )}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           title={title}
@@ -57,6 +66,8 @@ export const AppLayout = ({
           setLanguage={setLanguage}
           companyName={companyName}
           onLogout={onLogout}
+          onOpenSidebar={() => setIsSidebarOpen(true)}
+          isSidebarOpen={isSidebarOpen}
         />
         <main
           className={`flex-1 overflow-y-auto p-6 md:p-8 ${isDark ? "bg-slate-950/40" : "bg-transparent"}`}
