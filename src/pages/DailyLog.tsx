@@ -3,9 +3,9 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { menuRepository } from "../repositories/menuRepository";
+import { recordRepository } from "../repositories/recordRepository";
 import { MenuItem } from "../models/Menu";
 
-// Structure for each shift entry row
 interface ShiftLogRow {
   id: string;
   menuItemId: number;
@@ -36,6 +36,8 @@ export const DailyLog: React.FC = () => {
 
   const [rows, setRows] = useState<ShiftLogRow[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Load menu items on mount
   useEffect(() => {
@@ -48,6 +50,7 @@ export const DailyLog: React.FC = () => {
         }
       } catch (err) {
         console.error("Failed to load menu items", err);
+        setErrorMessage("Failed to load active menu items from server.");
       }
     };
     fetchMenu();
@@ -125,29 +128,38 @@ export const DailyLog: React.FC = () => {
     0,
   );
 
-  // Submit log handler
+  // Submit log handler using recordRepository
   const handleSubmitLog = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
-    const payload = {
-      date: shiftDate,
-      shift: shiftType,
-      records: calculatedRows.map((r) => ({
-        menuItemId: r.menuItemId,
-        preparedQty: r.preparedQty,
-        soldQty: r.soldQty,
-        wasteQty: r.wasteQty,
-        wasteCost: r.wasteCost,
-        wasteReason: r.wasteReason,
-      })),
-    };
+    try {
+      const payload = {
+        date: shiftDate,
+        shift: shiftType,
+        records: calculatedRows.map((r) => ({
+          menuItemId: r.menuItemId,
+          preparedQty: r.preparedQty,
+          soldQty: r.soldQty,
+          wasteQty: r.wasteQty,
+          wasteCost: r.wasteCost,
+          wasteReason: r.wasteReason,
+        })),
+      };
 
-    console.log("Submitting Shift Log:", payload);
-    setTimeout(() => {
-      alert("Shift log records saved successfully!");
+      await recordRepository.createBatch(payload);
+      setSuccessMessage("Shift log records saved successfully to the server!");
+    } catch (err: any) {
+      console.error("Failed to submit shift log batch", err);
+      setErrorMessage(
+        err?.response?.data?.message ||
+          "Failed to save shift logs. Please try again.",
+      );
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -180,6 +192,18 @@ export const DailyLog: React.FC = () => {
           </select>
         </div>
       </div>
+
+      {/* Success / Error Feedback Banners */}
+      {successMessage && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg">
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg">
+          {errorMessage}
+        </div>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
