@@ -12,3 +12,5 @@ export const BrandMark = ({ compact = false }: BrandMarkProps) => (
     <span className="absolute -left-2 -top-3 h-7 w-7 rounded-full border-4 border-emerald-300/30" />
   </div>
 );
+
+export default BrandMark;

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
-import { Login } from "./components/pages/Login";
-import { Dashboard } from "./components/pages/Dashboard";
-import { DailyLog } from "./components/pages/DailyLog";
-import { MenuManager } from "./components/pages/MenuManager";
-import { AboutUs, ContactUs } from "./components/pages/InfoPages";
-import { DashboardSkeleton } from "./components/pages/DashboardSkeleton";
+import { Login } from "./pages/Login";
+import { Dashboard } from "./pages/Dashboard";
+import { DailyLog } from "./pages/DailyLog";
+import { MenuManager } from "./pages/MenuManager";
+import { AboutUs, ContactUs } from "./pages/InfoPages";
+import { DashboardSkeleton } from "./components/dashboard/DashboardSkeleton";
 
 type Theme = "light" | "dark";
 type Language = "en" | "bm";
