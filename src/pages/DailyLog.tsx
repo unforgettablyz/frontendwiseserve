@@ -1,126 +1,362 @@
-import { useState } from "react";
-import { Card } from "../components/ui/Card";
+import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { menuRepository } from "../repositories/menuRepository";
+import { MenuItem } from "../models/Menu";
 
-interface DailyLogProps {
-  theme?: "light" | "dark";
-  language?: "en" | "bm";
+// Structure for each shift entry row
+interface ShiftLogRow {
+  id: string;
+  menuItemId: number;
+  itemName: string;
+  category: string;
+  costToProduce: number;
+  preparedQty: number;
+  soldQty: number;
+  wasteReason: string;
 }
 
-export const DailyLog = ({ theme = "light" }: DailyLogProps) => {
-  const isDark = theme === "dark";
-  const [selectedDate, setSelectedDate] = useState(
+const WASTE_REASONS = [
+  "Expired / Overcooked",
+  "Quality Control Drop",
+  "Customer Return / Wrong Order",
+  "Staff Consumption / Tasting",
+  "Unsold End of Shift",
+];
+
+export const DailyLog: React.FC = () => {
+  const [availableMenuItems, setAvailableMenuItems] = useState<MenuItem[]>([]);
+  const [shiftDate, setShiftDate] = useState<string>(
     new Date().toISOString().split("T")[0],
   );
+  const [shiftType, setShiftType] = useState<"Lunch" | "Dinner" | "Full Day">(
+    "Lunch",
+  );
 
-  const mockItems = [
-    { id: 1, name: "Chicken Teriyaki Bento", price: "$12.50" },
-    { id: 2, name: "Salmon Sashimi Plate", price: "$16.00" },
-    { id: 3, name: "Green Tea Ice Cream", price: "$4.50" },
-  ];
+  const [rows, setRows] = useState<ShiftLogRow[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Load menu items on mount
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const items = await menuRepository.getAll("active");
+        setAvailableMenuItems(items);
+        if (items.length > 0) {
+          setRows([createDefaultRow(items[0])]);
+        }
+      } catch (err) {
+        console.error("Failed to load menu items", err);
+      }
+    };
+    fetchMenu();
+  }, []);
+
+  // Helper to build a default table row
+  const createDefaultRow = (menuItem: MenuItem): ShiftLogRow => ({
+    id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+    menuItemId: menuItem.id,
+    itemName: menuItem.name,
+    category: menuItem.category,
+    costToProduce: menuItem.costToProduce,
+    preparedQty: 10,
+    soldQty: 8,
+    wasteReason: WASTE_REASONS[0],
+  });
+
+  // Table row management
+  const handleAddRow = () => {
+    if (availableMenuItems.length === 0) return;
+    setRows((prev) => [...prev, createDefaultRow(availableMenuItems[0])]);
+  };
+
+  const handleRemoveRow = (id: string) => {
+    setRows((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const handleRowChange = (
+    id: string,
+    field: keyof ShiftLogRow,
+    value: any,
+  ) => {
+    setRows((prev) =>
+      prev.map((row) => {
+        if (row.id !== id) return row;
+
+        // Sync item details if menu selection changes
+        if (field === "menuItemId") {
+          const selectedItem = availableMenuItems.find(
+            (m) => m.id === Number(value),
+          );
+          if (selectedItem) {
+            return {
+              ...row,
+              menuItemId: selectedItem.id,
+              itemName: selectedItem.name,
+              category: selectedItem.category,
+              costToProduce: selectedItem.costToProduce,
+            };
+          }
+        }
+
+        return { ...row, [field]: value };
+      }),
+    );
+  };
+
+  // Real-time waste and cost calculations
+  const calculatedRows = rows.map((r) => {
+    const wasteQty = Math.max(0, r.preparedQty - r.soldQty);
+    const wasteCost = wasteQty * r.costToProduce;
+    const wastePct = r.preparedQty > 0 ? (wasteQty / r.preparedQty) * 100 : 0;
+    return { ...r, wasteQty, wasteCost, wastePct };
+  });
+
+  // Aggregate stats
+  const totalPrepared = calculatedRows.reduce(
+    (acc, r) => acc + r.preparedQty,
+    0,
+  );
+  const totalSold = calculatedRows.reduce((acc, r) => acc + r.soldQty, 0);
+  const totalWasteQty = calculatedRows.reduce((acc, r) => acc + r.wasteQty, 0);
+  const totalWasteCost = calculatedRows.reduce(
+    (acc, r) => acc + r.wasteCost,
+    0,
+  );
+
+  // Submit log handler
+  const handleSubmitLog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const payload = {
+      date: shiftDate,
+      shift: shiftType,
+      records: calculatedRows.map((r) => ({
+        menuItemId: r.menuItemId,
+        preparedQty: r.preparedQty,
+        soldQty: r.soldQty,
+        wasteQty: r.wasteQty,
+        wasteCost: r.wasteCost,
+        wasteReason: r.wasteReason,
+      })),
+    };
+
+    console.log("Submitting Shift Log:", payload);
+    setTimeout(() => {
+      alert("Shift log records saved successfully!");
+      setIsSubmitting(false);
+    }, 1000);
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap justify-between items-center gap-4">
+    <div className="space-y-6">
+      {/* Header Controls */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <p
-            className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}
-          >
-            Record daily operational output and remaining stock.
+          <h1 className="text-2xl font-bold text-slate-900">
+            Daily Operational Log
+          </h1>
+          <p className="text-sm text-slate-500">
+            Record shift preparation, sales, and food waste metrics
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <input
+        <div className="flex items-center space-x-3">
+          <Input
             type="date"
-            value={selectedDate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSelectedDate(e.target.value)
-            }
-            className={`border rounded-2xl px-4 py-2 text-sm outline-none shadow-sm ${
-              isDark
-                ? "bg-slate-800 border-slate-700 text-slate-100"
-                : "bg-white border-slate-200 text-slate-700"
-            }`}
+            value={shiftDate}
+            onChange={(e) => setShiftDate(e.target.value)}
+            className="w-auto text-xs"
           />
-          <Button theme={theme}>Save Log Entry</Button>
+          <select
+            value={shiftType}
+            onChange={(e) => setShiftType(e.target.value as any)}
+            className="border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-slate-900"
+          >
+            <option value="Lunch">Lunch Shift</option>
+            <option value="Dinner">Dinner Shift</option>
+            <option value="Full Day">Full Day</option>
+          </select>
         </div>
       </div>
 
-      <Card theme={theme} className="p-0 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr
-              className={`border-b text-[11px] font-semibold uppercase tracking-[0.18em] ${
-                isDark
-                  ? "border-slate-700 bg-slate-800/80 text-slate-400"
-                  : "border-slate-200 bg-slate-50/80 text-slate-400"
-              }`}
+      {/* Overview Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4 bg-slate-50">
+          <p className="text-xs font-semibold text-slate-500 uppercase">
+            Total Prepared
+          </p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">
+            {totalPrepared} <span className="text-xs font-normal">units</span>
+          </p>
+        </Card>
+        <Card className="p-4 bg-slate-50">
+          <p className="text-xs font-semibold text-slate-500 uppercase">
+            Total Sold
+          </p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">
+            {totalSold} <span className="text-xs font-normal">units</span>
+          </p>
+        </Card>
+        <Card className="p-4 bg-slate-50">
+          <p className="text-xs font-semibold text-slate-500 uppercase">
+            Waste Volume
+          </p>
+          <p className="text-2xl font-bold text-amber-600 mt-1">
+            {totalWasteQty} <span className="text-xs font-normal">units</span>
+          </p>
+        </Card>
+        <Card className="p-4 bg-rose-50 border-rose-100">
+          <p className="text-xs font-semibold text-rose-600 uppercase">
+            Estimated Waste Cost
+          </p>
+          <p className="text-2xl font-bold text-rose-700 mt-1">
+            ${totalWasteCost.toFixed(2)}
+          </p>
+        </Card>
+      </div>
+
+      {/* Shift Log Table */}
+      <form onSubmit={handleSubmitLog}>
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="font-semibold text-slate-800 text-sm">
+              Shift Entry Items ({rows.length})
+            </h3>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleAddRow}
             >
-              <th className="py-4 px-6">Menu Item</th>
-              <th className="py-4 px-6 w-36">Qty Prepared</th>
-              <th className="py-4 px-6 w-36">Qty Sold</th>
-              <th className="py-4 px-6 w-36">Qty Leftover</th>
-            </tr>
-          </thead>
-          <tbody
-            className={`divide-y text-sm ${isDark ? "divide-slate-700" : "divide-slate-200"}`}
-          >
-            {mockItems.map((item) => (
-              <tr
-                key={item.id}
-                className={
-                  isDark
-                    ? "hover:bg-slate-800/60 transition-colors"
-                    : "hover:bg-slate-50/80 transition-colors"
-                }
-              >
-                <td
-                  className={`py-4 px-6 font-medium ${isDark ? "text-slate-100" : "text-slate-800"}`}
-                >
-                  {item.name}
-                </td>
-                <td className="py-3 px-6">
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className={`w-full rounded-xl px-3 py-2 text-sm outline-none border ${
-                      isDark
-                        ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-blue-400 focus:bg-slate-900"
-                        : "bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-500 focus:bg-white"
-                    }`}
-                  />
-                </td>
-                <td className="py-3 px-6">
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className={`w-full rounded-xl px-3 py-2 text-sm outline-none border ${
-                      isDark
-                        ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-blue-400 focus:bg-slate-900"
-                        : "bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-500 focus:bg-white"
-                    }`}
-                  />
-                </td>
-                <td className="py-3 px-6">
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className={`w-full rounded-xl px-3 py-2 text-sm outline-none border ${
-                      isDark
-                        ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-blue-400 focus:bg-slate-900"
-                        : "bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-500 focus:bg-white"
-                    }`}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+              + Add Item Row
+            </Button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 text-slate-700 font-semibold uppercase border-b border-slate-100">
+                <tr>
+                  <th className="p-3">Menu Item</th>
+                  <th className="p-3 w-28">Prep Qty</th>
+                  <th className="p-3 w-28">Sold Qty</th>
+                  <th className="p-3 w-28">Waste Qty</th>
+                  <th className="p-3 w-32">Waste Cost</th>
+                  <th className="p-3">Waste Reason</th>
+                  <th className="p-3 w-12 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {calculatedRows.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50/50">
+                    <td className="p-3">
+                      <select
+                        value={row.menuItemId}
+                        onChange={(e) =>
+                          handleRowChange(row.id, "menuItemId", e.target.value)
+                        }
+                        className="w-full border border-slate-200 rounded-md p-1.5 text-xs focus:ring-1 focus:ring-slate-900"
+                      >
+                        {availableMenuItems.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name} ({item.category})
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td className="p-3">
+                      <Input
+                        type="number"
+                        min="0"
+                        value={row.preparedQty}
+                        onChange={(e) =>
+                          handleRowChange(
+                            row.id,
+                            "preparedQty",
+                            parseInt(e.target.value) || 0,
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="p-3">
+                      <Input
+                        type="number"
+                        min="0"
+                        value={row.soldQty}
+                        onChange={(e) =>
+                          handleRowChange(
+                            row.id,
+                            "soldQty",
+                            parseInt(e.target.value) || 0,
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="p-3 font-semibold text-slate-800">
+                      <span
+                        className={
+                          row.wasteQty > 0 ? "text-amber-600" : "text-slate-400"
+                        }
+                      >
+                        {row.wasteQty} ({row.wastePct.toFixed(0)}%)
+                      </span>
+                    </td>
+
+                    <td className="p-3 font-semibold text-rose-600">
+                      ${row.wasteCost.toFixed(2)}
+                    </td>
+
+                    <td className="p-3">
+                      <select
+                        value={row.wasteReason}
+                        onChange={(e) =>
+                          handleRowChange(row.id, "wasteReason", e.target.value)
+                        }
+                        className="w-full border border-slate-200 rounded-md p-1.5 text-xs focus:ring-1 focus:ring-slate-900"
+                      >
+                        {WASTE_REASONS.map((reason) => (
+                          <option key={reason} value={reason}>
+                            {reason}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRow(row.id)}
+                        disabled={rows.length === 1}
+                        className="text-slate-400 hover:text-rose-600 font-bold p-1 disabled:opacity-30"
+                        title="Remove row"
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+            <span className="text-xs text-slate-500">
+              Auto-calculated variances ready for submit
+            </span>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting || rows.length === 0}
+            >
+              {isSubmitting ? "Submitting..." : "Save Shift Log Records"}
+            </Button>
+          </div>
+        </Card>
+      </form>
     </div>
   );
 };
