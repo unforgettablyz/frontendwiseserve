@@ -7,7 +7,15 @@ import { MenuScannerModal } from "../components/menu/MenuScannerModal";
 import { MenuFormModal } from "../components/menu/MenuFormModal";
 import { menuRepository } from "../repositories/menuRepository";
 
-export const MenuManager: React.FC = () => {
+interface MenuManagerProps {
+  theme?: "light" | "dark";
+  language?: "en" | "bm";
+}
+
+export const MenuManager: React.FC<MenuManagerProps> = ({
+  theme,
+  language,
+}) => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

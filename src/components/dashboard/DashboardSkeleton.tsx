@@ -90,3 +90,5 @@ export const DashboardSkeleton = ({
     </Card>
   </div>
 );
+
+export default DashboardSkeleton;

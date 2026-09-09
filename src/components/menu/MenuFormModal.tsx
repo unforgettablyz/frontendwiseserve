@@ -138,3 +138,5 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
     </Modal>
   );
 };
+
+export default MenuFormModal;

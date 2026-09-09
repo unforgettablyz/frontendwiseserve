@@ -14,8 +14,10 @@ type AuthMode = "login" | "signup";
 
 interface LoginProps {
   onLogin: (companyName: string) => void;
-  theme?: Theme;
-  setTheme: Dispatch<SetStateAction<Theme>>;
+  theme: "light" | "dark";
+  setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>;
+  language?: "en" | "bm";
+  setLanguage?: React.Dispatch<React.SetStateAction<"en" | "bm">>;
 }
 
 export const Login = ({ onLogin, theme = "light", setTheme }: LoginProps) => {
@@ -255,3 +257,5 @@ export const Login = ({ onLogin, theme = "light", setTheme }: LoginProps) => {
     </div>
   );
 };
+
+export default Login;

@@ -5,6 +5,7 @@ import { Input } from "../components/ui/Input";
 import { menuRepository } from "../repositories/menuRepository";
 import { recordRepository } from "../repositories/recordRepository";
 import { MenuItem } from "../models/Menu";
+import { PrepSheetScannerModal } from "../components/daily/PrepSheetScannerModal";
 
 interface ShiftLogRow {
   id: string;
@@ -25,7 +26,12 @@ const WASTE_REASONS = [
   "Unsold End of Shift",
 ];
 
-export const DailyLog: React.FC = () => {
+interface DailyLogProps {
+  theme?: "light" | "dark";
+  language?: "en" | "bm";
+}
+
+export const DailyLog: React.FC<DailyLogProps> = ({ theme, language }) => {
   const [availableMenuItems, setAvailableMenuItems] = useState<MenuItem[]>([]);
   const [shiftDate, setShiftDate] = useState<string>(
     new Date().toISOString().split("T")[0],
@@ -384,3 +390,5 @@ export const DailyLog: React.FC = () => {
     </div>
   );
 };
+
+export default DailyLog;

@@ -208,3 +208,5 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
     </Modal>
   );
 };
+
+export default MenuScannerModal;
