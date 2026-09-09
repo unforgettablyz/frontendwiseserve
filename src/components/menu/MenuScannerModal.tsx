@@ -4,10 +4,13 @@ import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { CategoryType, ScannedMenuItem } from "../../models/Menu";
 
+type Theme = "light" | "dark";
+
 interface MenuScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportItems: (items: ScannedMenuItem[]) => void;
+  theme?: Theme;
 }
 
 const CATEGORY_OPTIONS: CategoryType[] = [
@@ -76,7 +79,9 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
   isOpen,
   onClose,
   onImportItems,
+  theme = "light",
 }) => {
+  const isDark = theme === "dark";
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -159,18 +164,29 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Import Menu Items via Vision AI"
+      theme={theme}
     >
       <div className="space-y-6">
         {/* Step 1: Upload Zone */}
         {!previewUrl ? (
-          <div className="border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl p-8 text-center bg-slate-50 transition-colors">
+          <div
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+              isDark
+                ? "border-slate-600 hover:border-slate-500 bg-slate-800/60"
+                : "border-slate-300 hover:border-slate-400 bg-slate-50"
+            }`}
+          >
             <div className="flex flex-col items-center justify-center space-y-3">
               <CameraIcon />
               <div>
-                <p className="text-sm font-semibold text-slate-700">
+                <p
+                  className={`text-sm font-semibold ${isDark ? "text-slate-200" : "text-slate-700"}`}
+                >
                   Drag & drop menu or recipe sheet photo
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p
+                  className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                >
                   Supports PNG, JPG, or PDF up to 10MB
                 </p>
               </div>
@@ -186,17 +202,23 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex items-center space-x-4 bg-slate-100 p-3 rounded-lg">
+          <div
+            className={`flex items-center space-x-4 p-3 rounded-lg ${isDark ? "bg-slate-800/60" : "bg-slate-100"}`}
+          >
             <img
               src={previewUrl}
               alt="Scan preview"
               className="w-16 h-16 object-cover rounded-md"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-800 truncate">
+              <p
+                className={`text-xs font-semibold truncate ${isDark ? "text-slate-100" : "text-slate-800"}`}
+              >
                 {selectedFile?.name}
               </p>
-              <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+              <div
+                className={`mt-1 flex items-center gap-1.5 text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+              >
                 {isScanning ? (
                   <>
                     <ClockIcon />
@@ -210,7 +232,12 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                 )}
               </div>
             </div>
-            <Button variant="secondary" size="sm" onClick={handleReset}>
+            <Button
+              variant="secondary"
+              theme={theme}
+              size="sm"
+              onClick={handleReset}
+            >
               Re-upload
             </Button>
           </div>
@@ -220,7 +247,9 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
         {isScanning && (
           <div className="flex flex-col items-center py-6 space-y-2">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xs font-medium text-slate-600">
+            <p
+              className={`text-xs font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}
+            >
               Parsing dish names, prices, and prep costs...
             </p>
           </div>
@@ -230,23 +259,30 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
         {!isScanning && stagedItems.length > 0 && (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-slate-300" : "text-slate-700"}`}
+              >
                 Extracted Items ({stagedItems.length})
               </h4>
-              <span className="text-xs text-slate-500">
+              <span
+                className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+              >
                 Verify extracted data before importing
               </span>
             </div>
 
-            <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+            <div
+              className={`max-h-60 overflow-y-auto border rounded-lg divide-y ${isDark ? "border-slate-700 divide-slate-700 bg-slate-900" : "border-slate-200 divide-slate-100 bg-white"}`}
+            >
               {stagedItems.map((item) => (
                 <div
                   key={item.tempId}
-                  className="p-3 grid grid-cols-12 gap-2 items-center bg-white text-xs"
+                  className={`p-3 grid grid-cols-12 gap-2 items-center text-xs ${isDark ? "bg-slate-900" : "bg-white"}`}
                 >
                   {/* Dish Name */}
                   <div className="col-span-4">
                     <Input
+                      theme={theme}
                       value={item.name}
                       onChange={(e) =>
                         handleUpdateStagedItem(
@@ -270,7 +306,7 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                           e.target.value as CategoryType,
                         )
                       }
-                      className="w-full border border-slate-200 rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900"
+                      className={`w-full border rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 ${isDark ? "border-slate-600 bg-slate-800 text-slate-100" : "border-slate-200 bg-white text-slate-800"}`}
                     >
                       {CATEGORY_OPTIONS.map((cat) => (
                         <option key={cat} value={cat}>
@@ -283,6 +319,7 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                   {/* Price */}
                   <div className="col-span-2">
                     <Input
+                      theme={theme}
                       type="number"
                       value={item.price}
                       onChange={(e) =>
@@ -299,6 +336,7 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                   {/* Prep Cost */}
                   <div className="col-span-2">
                     <Input
+                      theme={theme}
                       type="number"
                       value={item.costToProduce}
                       onChange={(e) =>
@@ -330,12 +368,15 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
         )}
 
         {/* Footer Actions */}
-        <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
-          <Button variant="secondary" onClick={onClose}>
+        <div
+          className={`flex justify-end space-x-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-slate-100"}`}
+        >
+          <Button variant="secondary" theme={theme} onClick={onClose}>
             Cancel
           </Button>
           <Button
             variant="primary"
+            theme={theme}
             disabled={stagedItems.length === 0 || isScanning}
             onClick={handleConfirmImport}
           >

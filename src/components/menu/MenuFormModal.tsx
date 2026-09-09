@@ -4,11 +4,14 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { MenuItem, CategoryType } from "../../models/Menu";
 
+type Theme = "light" | "dark";
+
 interface MenuFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (itemData: Partial<MenuItem>) => void;
   initialData?: MenuItem | null;
+  theme?: Theme;
 }
 
 const CATEGORIES: CategoryType[] = [
@@ -24,7 +27,9 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
   onClose,
   onSave,
   initialData,
+  theme = "light",
 }) => {
+  const isDark = theme === "dark";
   const [name, setName] = useState("");
   const [category, setCategory] = useState<CategoryType>("Mains");
   const [price, setPrice] = useState("");
@@ -65,13 +70,17 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={initialData ? "Edit Menu Item" : "Add New Menu Item"}
+      theme={theme}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label
+            className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+          >
             Item Name
           </label>
           <Input
+            theme={theme}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Teriyaki Chicken Bento"
@@ -80,13 +89,15 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label
+            className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+          >
             Category
           </label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as CategoryType)}
-            className="w-full border border-slate-200 rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 bg-white"
+            className={`w-full border rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 ${isDark ? "border-slate-600 bg-slate-800 text-slate-100" : "border-slate-200 bg-white text-slate-800"}`}
           >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -98,10 +109,13 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label
+              className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+            >
               Selling Price ($)
             </label>
             <Input
+              theme={theme}
               type="number"
               step="0.01"
               value={price}
@@ -112,10 +126,13 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label
+              className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+            >
               Prep Cost ($)
             </label>
             <Input
+              theme={theme}
               type="number"
               step="0.01"
               value={costToProduce}
@@ -126,11 +143,18 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
-          <Button variant="secondary" type="button" onClick={onClose}>
+        <div
+          className={`flex justify-end space-x-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-slate-100"}`}
+        >
+          <Button
+            variant="secondary"
+            theme={theme}
+            type="button"
+            onClick={onClose}
+          >
             Cancel
           </Button>
-          <Button variant="primary" type="submit">
+          <Button variant="primary" theme={theme} type="submit">
             {initialData ? "Save Changes" : "Create Item"}
           </Button>
         </div>

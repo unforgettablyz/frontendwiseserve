@@ -7,6 +7,13 @@ import { MenuScannerModal } from "../components/menu/MenuScannerModal";
 import { MenuFormModal } from "../components/menu/MenuFormModal";
 import { menuRepository } from "../repositories/menuRepository";
 
+type Theme = "light" | "dark";
+
+interface MenuManagerProps {
+  theme?: Theme;
+  language?: "en" | "bm";
+}
+
 const SearchIcon = () => (
   <svg
     aria-hidden="true"
@@ -48,7 +55,11 @@ const PlusIcon = () => (
   </svg>
 );
 
-export const MenuManager: React.FC = () => {
+export const MenuManager: React.FC<MenuManagerProps> = ({
+  theme = "light",
+  language: _language,
+}) => {
+  const isDark = theme === "dark";
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,23 +156,31 @@ export const MenuManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1
+            className={`text-2xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
+          >
             Menu Management
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p
+            className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+          >
             Manage active recipes, selling prices, and standard baseline
             production costs.
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
-          <Button variant="secondary" onClick={() => setIsScannerOpen(true)}>
+          <Button
+            variant="secondary"
+            theme={theme}
+            onClick={() => setIsScannerOpen(true)}
+          >
             <span className="inline-flex items-center gap-2">
               <CameraIcon />
               <span>Scan Menu / Recipe</span>
             </span>
           </Button>
-          <Button variant="primary" onClick={handleOpenAddModal}>
+          <Button variant="primary" theme={theme} onClick={handleOpenAddModal}>
             <span className="inline-flex items-center gap-2">
               <PlusIcon />
               <span>Add New Item</span>
@@ -170,14 +189,17 @@ export const MenuManager: React.FC = () => {
         </div>
       </div>
 
-      <Card className="p-4">
+      <Card theme={theme} className="p-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="w-full md:w-72">
             <div className="relative">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+              <span
+                className={`pointer-events-none absolute inset-y-0 left-3 flex items-center ${isDark ? "text-slate-400" : "text-slate-400"}`}
+              >
                 <SearchIcon />
               </span>
               <Input
+                theme={theme}
                 className="pl-9"
                 placeholder="Search dish name..."
                 value={searchQuery}
@@ -194,8 +216,12 @@ export const MenuManager: React.FC = () => {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                     selectedCategory === cat
-                      ? "bg-slate-900 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      ? isDark
+                        ? "bg-slate-100 text-slate-900"
+                        : "bg-slate-900 text-white"
+                      : isDark
+                        ? "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
                   {cat}
@@ -206,11 +232,17 @@ export const MenuManager: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden">
+      <Card theme={theme} className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <tr
+                className={`border-b text-[11px] font-bold uppercase tracking-wider ${
+                  isDark
+                    ? "border-slate-700 bg-slate-800/60 text-slate-400"
+                    : "border-slate-100 bg-slate-50/50 text-slate-400"
+                }`}
+              >
                 <th className="py-3 px-4">Item Name</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">Selling Price</th>
@@ -219,7 +251,9 @@ export const MenuManager: React.FC = () => {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+            <tbody
+              className={`text-xs ${isDark ? "divide-y divide-slate-700 text-slate-300" : "divide-y divide-slate-100 text-slate-700"}`}
+            >
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400">
@@ -245,28 +279,48 @@ export const MenuManager: React.FC = () => {
                 filteredItems.map((item) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-slate-50/50 transition-colors"
+                    className={
+                      isDark
+                        ? "hover:bg-slate-800/60 transition-colors"
+                        : "hover:bg-slate-50/50 transition-colors"
+                    }
                   >
-                    <td className="py-3.5 px-4 font-semibold text-slate-900">
+                    <td
+                      className={`py-3.5 px-4 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}
+                    >
                       {item.name}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-medium">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                          isDark
+                            ? "bg-slate-800 text-slate-200"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
                         {item.category}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-900">
+                    <td
+                      className={`py-3.5 px-4 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}
+                    >
                       ${item.price.toFixed(2)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500">
+                    <td
+                      className={`py-3.5 px-4 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                    >
                       ${item.costToProduce.toFixed(2)}
                     </td>
                     <td className="py-3.5 px-4">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           item.isActive
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-slate-100 text-slate-500"
+                            ? isDark
+                              ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+                              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : isDark
+                              ? "bg-slate-800 text-slate-300"
+                              : "bg-slate-100 text-slate-500"
                         }`}
                       >
                         {item.isActive ? "Active" : "Archived"}
@@ -275,7 +329,7 @@ export const MenuManager: React.FC = () => {
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => handleOpenEditModal(item)}
-                        className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
+                        className={`text-xs font-medium transition-colors ${isDark ? "text-slate-300 hover:text-slate-100" : "text-slate-500 hover:text-slate-900"}`}
                       >
                         Edit
                       </button>
@@ -292,6 +346,7 @@ export const MenuManager: React.FC = () => {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onImportItems={handleImportScannedItems}
+        theme={theme}
       />
 
       <MenuFormModal
@@ -299,6 +354,7 @@ export const MenuManager: React.FC = () => {
         onClose={() => setIsFormOpen(false)}
         onSave={handleSaveItem}
         initialData={editingItem}
+        theme={theme}
       />
     </div>
   );
