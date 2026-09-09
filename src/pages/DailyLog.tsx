@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card } from "../ui/Card";
-import { Button } from "../ui/Button";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
 
 interface DailyLogProps {
   theme?: "light" | "dark";

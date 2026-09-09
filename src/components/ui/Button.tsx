@@ -2,16 +2,19 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 type Theme = "light" | "dark";
 type Variant = "primary" | "secondary" | "danger";
+type Size = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   variant?: Variant;
+  size?: Size;
   theme?: Theme;
 }
 
 export const Button = ({
   children,
   variant = "primary",
+  size = "md",
   className = "",
   theme = "light",
   ...props
@@ -30,12 +33,20 @@ export const Button = ({
       : "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200",
   };
 
+  const sizes: Record<Size, string> = {
+    sm: "px-3 py-1.5 text-xs rounded-xl",
+    md: "px-4 py-2.5 text-sm rounded-2xl",
+    lg: "px-5 py-3 text-base rounded-2xl",
+  };
+
   return (
     <button
-      className={`px-4 py-2.5 rounded-2xl font-medium text-sm transition-all duration-200 active:scale-[0.98] cursor-pointer ${variants[variant]} ${className}`}
+      className={`font-medium transition-all duration-200 active:scale-[0.98] cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}
     </button>
   );
 };
+
+export default Button;

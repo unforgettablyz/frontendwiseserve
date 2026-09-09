@@ -60,3 +60,5 @@ export const Modal = ({
     document.body,
   );
 };
+
+export default Modal;

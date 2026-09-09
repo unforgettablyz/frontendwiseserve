@@ -7,7 +7,7 @@ interface DashboardProps {
 }
 
 import { useState } from "react";
-import { Card } from "../ui/Card";
+import { Card } from "../components/ui/Card";
 import {
   Area,
   AreaChart,
