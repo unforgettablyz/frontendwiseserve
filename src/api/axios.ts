@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios";
 
 export const api = axios.create({
   baseURL: "http://localhost:4000/api",
@@ -9,7 +9,7 @@ export const api = axios.create({
 
 // Request interceptor to attach auth headers automatically
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     // Attach demo header as required by backend handbook
     config.headers.authCode = "123";
 
@@ -21,7 +21,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
+  (error: any) => {
     return Promise.reject(error);
   },
 );

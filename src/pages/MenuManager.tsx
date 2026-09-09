@@ -7,6 +7,47 @@ import { MenuScannerModal } from "../components/menu/MenuScannerModal";
 import { MenuFormModal } from "../components/menu/MenuFormModal";
 import { menuRepository } from "../repositories/menuRepository";
 
+const SearchIcon = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    className="h-4 w-4"
+  >
+    <circle cx="11" cy="11" r="6" />
+    <path d="m16 16 4 4" />
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    className="h-4 w-4"
+  >
+    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h2.2l1.2-1.5h4.2L15.3 5h2.2A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
+    <circle cx="12" cy="12" r="3.5" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    className="h-4 w-4"
+  >
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+
 export const MenuManager: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -115,10 +156,16 @@ export const MenuManager: React.FC = () => {
 
         <div className="flex items-center space-x-3">
           <Button variant="secondary" onClick={() => setIsScannerOpen(true)}>
-            📷 Scan Menu / Recipe
+            <span className="inline-flex items-center gap-2">
+              <CameraIcon />
+              <span>Scan Menu / Recipe</span>
+            </span>
           </Button>
           <Button variant="primary" onClick={handleOpenAddModal}>
-            + Add New Item
+            <span className="inline-flex items-center gap-2">
+              <PlusIcon />
+              <span>Add New Item</span>
+            </span>
           </Button>
         </div>
       </div>
@@ -126,11 +173,17 @@ export const MenuManager: React.FC = () => {
       <Card className="p-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="w-full md:w-72">
-            <Input
-              placeholder="🔍 Search dish name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <SearchIcon />
+              </span>
+              <Input
+                className="pl-9"
+                placeholder="Search dish name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
