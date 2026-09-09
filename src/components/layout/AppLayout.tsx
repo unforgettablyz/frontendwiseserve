@@ -16,6 +16,7 @@ interface AppLayoutProps {
   language: Language;
   setLanguage: Dispatch<SetStateAction<Language>>;
   companyName: string;
+  onLogout: () => void;
 }
 
 export const AppLayout = ({
@@ -28,6 +29,7 @@ export const AppLayout = ({
   language,
   setLanguage,
   companyName,
+  onLogout,
 }: AppLayoutProps) => {
   const isDark = theme === "dark";
 
@@ -54,6 +56,7 @@ export const AppLayout = ({
           language={language}
           setLanguage={setLanguage}
           companyName={companyName}
+          onLogout={onLogout}
         />
         <main
           className={`flex-1 overflow-y-auto p-6 md:p-8 ${isDark ? "bg-slate-950/40" : "bg-transparent"}`}
