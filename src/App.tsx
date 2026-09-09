@@ -6,6 +6,7 @@ import { DailyLog } from "./pages/DailyLog";
 import { MenuManager } from "./pages/MenuManager";
 import { AboutUs, ContactUs } from "./pages/InfoPages";
 import { DashboardSkeleton } from "./components/dashboard/DashboardSkeleton";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 
 const outletsByRestaurant: Record<string, string[]> = {
   "Fry & Fire": [
@@ -138,58 +139,58 @@ export default function App() {
     window.localStorage.removeItem("wiseserve-authenticated");
   };
 
-  if (!isAuthenticated) {
-    return (
-      <Login
-        onLogin={handleLogin}
-        theme={theme}
-        setTheme={setTheme}
-        language={language}
-        setLanguage={setLanguage}
-      />
-    );
-  }
-
   return (
-    <AppLayout
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      title={t.pageTitles[activeTab]}
-      theme={theme}
-      setTheme={setTheme}
-      language={language}
-      setLanguage={setLanguage}
-      companyName={selectedCompany}
-      onLogout={handleLogout}
-      outlets={outletOptions}
-      onOutletChange={handleOutletChange}
-    >
-      {isLoading && activeTab === "dashboard" && (
-        <DashboardSkeleton theme={theme} />
-      )}
-      {!isLoading && activeTab === "dashboard" && (
-        <Dashboard
+    <ErrorBoundary theme={theme}>
+      {!isAuthenticated ? (
+        <Login
+          onLogin={handleLogin}
           theme={theme}
+          setTheme={setTheme}
           language={language}
-          companyName={selectedCompany}
+          setLanguage={setLanguage}
         />
-      )}
-      {!isLoading && activeTab === "dailylog" && (
-        <DailyLog
+      ) : (
+        <AppLayout
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          title={t.pageTitles[activeTab]}
           theme={theme}
+          setTheme={setTheme}
           language={language}
+          setLanguage={setLanguage}
           companyName={selectedCompany}
-        />
+          onLogout={handleLogout}
+          outlets={outletOptions}
+          onOutletChange={handleOutletChange}
+        >
+          {isLoading && activeTab === "dashboard" && (
+            <DashboardSkeleton theme={theme} />
+          )}
+          {!isLoading && activeTab === "dashboard" && (
+            <Dashboard
+              theme={theme}
+              language={language}
+              companyName={selectedCompany}
+            />
+          )}
+          {!isLoading && activeTab === "dailylog" && (
+            <DailyLog
+              theme={theme}
+              language={language}
+              companyName={selectedCompany}
+            />
+          )}
+          {!isLoading && activeTab === "menu" && (
+            <MenuManager theme={theme} language={language} />
+          )}
+          {!isLoading && activeTab === "about" && (
+            <AboutUs theme={theme} language={language} />
+          )}
+          {!isLoading && activeTab === "contact" && (
+            <ContactUs theme={theme} language={language} />
+          )}
+        </AppLayout>
       )}
-      {!isLoading && activeTab === "menu" && (
-        <MenuManager theme={theme} language={language} />
-      )}
-      {!isLoading && activeTab === "about" && (
-        <AboutUs theme={theme} language={language} />
-      )}
-      {!isLoading && activeTab === "contact" && (
-        <ContactUs theme={theme} language={language} />
-      )}
-    </AppLayout>
+    </ErrorBoundary>
   );
 }
