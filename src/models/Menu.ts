@@ -8,10 +8,11 @@ export type CategoryType =
 export interface MenuItem {
   id: number;
   name: string;
-  category: CategoryType;
-  price: number;
+  category: CategoryType | string;
+  sellingPrice: number;
   costToProduce: number; // Prep Cost ($Loss = WasteUnits * PrepCost)
-  isActive: boolean;
+  isActive?: boolean;
+  soldQty?: number;
 }
 
 export interface ScannedMenuItem {
