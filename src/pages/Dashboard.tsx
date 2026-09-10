@@ -155,373 +155,110 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
     },
   ];
 
-  const filteredProfitabilityData = profitabilityData.filter(
-    (item) =>
-      (menuItem === "all" || item.name === menuItem) &&
-      (!highWasteOnly || item.waste >= 20),
-  );
-  const filteredWasteBreakdown =
-    wasteReason === "all"
-      ? wasteBreakdown
-      : wasteBreakdown.filter((entry) => entry.name === wasteReason);
-
-  const recommendations = [
-    {
-      priority: "Highest impact",
-      title: "Reduce Chicken Teriyaki prep by 12 units",
-      description:
-        "Overproduction is your largest waste source and this item accounts for 34 leftover units.",
-      impact: "Save up to $60 this week",
-      tone: "blue",
-    },
-    {
-      priority: "Needs attention",
-      title: "Review Salmon Sashimi stock rotation",
-      description:
-        "18 portions were left over. Check delivery timing and prep closer to the dinner service.",
-      impact: "Prevent $144 loss",
-      tone: "amber",
-    },
-    {
-      priority: "Quick win",
-      title: "Promote Miso Soup as a set add-on",
-      description:
-        "42 portions remain. Pairing it with popular bentos can improve sell-through before closing.",
-      impact: "Recover $42 value",
-      tone: "green",
-    },
-  ];
-
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs text-slate-400">
-            {companyName ?? "Current outlet"}
-          </p>
-          <p
-            className={`text-sm font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}
-          >
-            Showing the last {dateRange === "all" ? "90" : dateRange} days
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <select
-            value={dateRange}
-            onChange={(event) => setDateRange(event.target.value)}
-            aria-label="Filter dashboard date range"
-            className={`rounded-xl border px-3 py-2 text-sm outline-none ${
-              isDark
-                ? "border-slate-700 bg-slate-800 text-slate-200"
-                : "border-slate-200 bg-white text-slate-700"
-            }`}
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="all">All activity</option>
-          </select>
-          <select
-            value={wasteReason}
-            onChange={(event) => setWasteReason(event.target.value)}
-            aria-label="Filter by waste reason"
-            className={`dashboard-filter ${isDark ? "" : "dashboard-filter-light"}`}
-          >
-            <option value="all">All waste reasons</option>
-            {wasteBreakdown.map((entry) => (
-              <option key={entry.name} value={entry.name}>
-                {entry.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={menuItem}
-            onChange={(event) => setMenuItem(event.target.value)}
-            aria-label="Filter by menu item"
-            className={`dashboard-filter ${isDark ? "" : "dashboard-filter-light"}`}
-          >
-            <option value="all">All menu items</option>
-            {profitabilityData.map((item) => (
-              <option key={item.name} value={item.name}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <label
-            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${isDark ? "border-slate-700 text-slate-300" : "border-slate-200 text-slate-600"}`}
-          >
-            <input
-              type="checkbox"
-              checked={highWasteOnly}
-              onChange={(event) => setHighWasteOnly(event.target.checked)}
-              className="accent-rose-500"
-            />
-            High waste only
-          </label>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {mockMetrics.map((m, idx) => (
-          <Card key={idx} theme={theme} className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {mockMetrics.map((metric) => (
+          <Card key={metric.label} theme={theme} className="p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p
+                  className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${
+                    isDark ? "text-slate-400" : "text-slate-500"
+                  }`}
+                >
+                  {metric.label}
+                </p>
+                <p
+                  className={`mt-2 text-2xl font-bold tracking-tight ${
+                    isDark ? "text-slate-100" : "text-slate-900"
+                  }`}
+                >
+                  {metric.value}
+                </p>
+              </div>
               <span
-                className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? "text-slate-400" : "text-slate-400"}`}
+                className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${toneClasses[metric.tone]}`}
               >
-                {m.label}
-              </span>
-              <span
-                className={`rounded-full px-2 py-1 text-[10px] font-semibold ${toneClasses[m.tone]}`}
-              >
-                {m.change}
+                {metric.change}
               </span>
             </div>
-            <span
-              className={`text-3xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-            >
-              {m.value}
-            </span>
           </Card>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <Card theme={theme} className="xl:col-span-2 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h3
-              className={`font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-            >
-              Daily Sales vs. Waste Volume
-            </h3>
-            <span className="text-xs text-slate-400">Mon - Sun</span>
-          </div>
-          <div
-            className={`h-72 rounded-[22px] border p-3 ${
-              isDark
-                ? "bg-slate-950/70 border-slate-700"
-                : "bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200"
-            }`}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={visibleWeeklyData}
-                margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
-              >
-                <CartesianGrid
-                  stroke={isDark ? "#334155" : "#e2e8f0"}
-                  strokeDasharray="3 3"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="day"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 11 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 11 }}
-                  tickFormatter={(value: number) => `$${value / 1000}k`}
-                />
-                <Tooltip
-                  cursor={{ fill: isDark ? "#1e293b" : "#f1f5f9" }}
-                  contentStyle={{
-                    backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                    border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-                    borderRadius: "12px",
-                    color: isDark ? "#f8fafc" : "#0f172a",
-                  }}
-                  formatter={(value: number, name: string) => [
-                    `$${value.toLocaleString()}`,
-                    name === "sales" ? "Sales" : "Waste",
-                  ]}
-                />
-                <Legend
-                  iconType="circle"
-                  wrapperStyle={{
-                    color: isDark ? "#cbd5e1" : "#475569",
-                    fontSize: 12,
-                  }}
-                />
-                <Bar
-                  dataKey="sales"
-                  name="Sales"
-                  fill={isDark ? "#93c5fd" : "#2563eb"}
-                  radius={[5, 5, 0, 0]}
-                />
-                <Bar
-                  dataKey="waste"
-                  name="Waste"
-                  fill={isDark ? "#fda4af" : "#e11d48"}
-                  radius={[5, 5, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card theme={theme} className="flex flex-col gap-4">
-          <h3
-            className={`font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-          >
-            Top Wasted Items
-          </h3>
-          <div className="flex flex-col gap-3">
-            {[
-              { name: "Chicken Teriyaki Bento", qty: "34 units", loss: "$170" },
-              { name: "Salmon Sashimi Plate", qty: "18 units", loss: "$144" },
-              { name: "Miso Soup Portion", qty: "42 units", loss: "$42" },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className={`flex items-center justify-between p-3 rounded-2xl border ${
-                  isDark
-                    ? "bg-slate-800 border-slate-700"
-                    : "bg-slate-50 border-slate-200"
-                }`}
-              >
-                <div>
-                  <p
-                    className={`text-sm font-medium ${isDark ? "text-slate-100" : "text-slate-800"}`}
-                  >
-                    {item.name}
-                  </p>
-                  <p className="text-xs text-slate-400">{item.qty} leftover</p>
-                </div>
-                <span className="text-sm font-semibold text-rose-500">
-                  -{item.loss}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <Card theme={theme} className="xl:col-span-2 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+      <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+        <Card theme={theme} className="p-4">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h3
-                className={`font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
+                className={`text-sm font-bold ${
+                  isDark ? "text-slate-100" : "text-slate-900"
+                }`}
               >
-                Revenue Trend
+                Revenue vs Waste
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Actual revenue against weekly target
+              <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                Daily performance snapshot
               </p>
             </div>
-            <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
-              +14.8%
-            </span>
+            <select
+              value={dateRange}
+              onChange={(event) => setDateRange(event.target.value)}
+              className={`rounded-xl border px-3 py-1.5 text-xs outline-none ${
+                isDark
+                  ? "border-slate-700 bg-slate-800 text-slate-100"
+                  : "border-slate-200 bg-slate-50 text-slate-800"
+              }`}
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+            </select>
           </div>
-          <div
-            className={`h-64 rounded-[22px] border p-3 ${
-              isDark
-                ? "bg-slate-950/70 border-slate-700"
-                : "bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200"
-            }`}
-          >
+          <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={revenueTrend}
-                margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
-              >
+              <AreaChart data={visibleWeeklyData}>
                 <defs>
-                  <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="0%"
-                      stopColor={isDark ? "#60a5fa" : "#2563eb"}
-                      stopOpacity={0.35}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor={isDark ? "#60a5fa" : "#2563eb"}
-                      stopOpacity={0.02}
-                    />
+                  <linearGradient id="salesFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.45} />
+                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid
-                  stroke={isDark ? "#334155" : "#e2e8f0"}
-                  strokeDasharray="3 3"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="week"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 11 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 11 }}
-                  tickFormatter={(value: number) => `$${value / 1000}k`}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#cbd5e1"} />
+                <XAxis dataKey="day" stroke={isDark ? "#94a3b8" : "#64748b"} />
+                <YAxis stroke={isDark ? "#94a3b8" : "#64748b"} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                    border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-                    borderRadius: "12px",
-                    color: isDark ? "#f8fafc" : "#0f172a",
+                    borderColor: isDark ? "#334155" : "#e2e8f0",
+                    borderRadius: 16,
                   }}
-                  formatter={(value: number, name: string) => [
-                    `$${value.toLocaleString()}`,
-                    name === "revenue" ? "Revenue" : "Target",
-                  ]}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke={isDark ? "#60a5fa" : "#2563eb"}
-                  strokeWidth={3}
-                  fill="url(#revenueFill)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="target"
-                  stroke={isDark ? "#94a3b8" : "#94a3b8"}
-                  strokeDasharray="5 5"
-                  strokeWidth={2}
-                  fill="none"
-                />
+                <Area type="monotone" dataKey="sales" stroke="#4f46e5" fill="url(#salesFill)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        <Card theme={theme} className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-3">
+        <Card theme={theme} className="p-4">
+          <div className="mb-4">
             <h3
-              className={`font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-            >
-              <span className="block">Waste Sources</span>
-              <span className="mt-1 block text-xs font-normal text-slate-400">
-                How this week&apos;s waste happened
-              </span>
-            </h3>
-            <span
-              className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${
-                isDark
-                  ? "bg-slate-800 text-slate-300"
-                  : "bg-slate-100 text-slate-500"
+              className={`text-sm font-bold ${
+                isDark ? "text-slate-100" : "text-slate-900"
               }`}
             >
-              112 units
-            </span>
+              Waste Breakdown
+            </h3>
+            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              Root causes this week
+            </p>
           </div>
-          <div className="relative h-52">
+
+          <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={filteredWasteBreakdown}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={52}
-                  outerRadius={76}
-                  paddingAngle={3}
-                  stroke="none"
-                >
-                  {filteredWasteBreakdown.map((entry) => (
+                <Pie data={wasteBreakdown} dataKey="value" nameKey="name" innerRadius={48} outerRadius={74} paddingAngle={3}>
+                  {wasteBreakdown.map((entry) => (
                     <Cell
                       key={entry.name}
                       fill={isDark ? entry.darkColor : entry.lightColor}
@@ -531,268 +268,159 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                    border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-                    borderRadius: "12px",
-                    color: isDark ? "#f8fafc" : "#0f172a",
+                    borderColor: isDark ? "#334155" : "#e2e8f0",
+                    borderRadius: 16,
                   }}
-                  formatter={(value: number) => [`${value}%`, "Share"]}
                 />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className={`text-2xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-              >
-                112
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400">
-                units wasted
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-            {wasteBreakdown.map((entry) => (
-              <div key={entry.name} className="flex items-center gap-2 text-xs">
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{
-                    backgroundColor: isDark
-                      ? entry.darkColor
-                      : entry.lightColor,
-                  }}
-                />
-                <span className={isDark ? "text-slate-300" : "text-slate-600"}>
-                  {entry.name}
-                </span>
-                <span className="ml-auto font-semibold text-slate-400">
-                  {entry.value}%
-                </span>
-              </div>
-            ))}
           </div>
         </Card>
       </div>
 
-      <Card theme={theme} className="flex flex-col gap-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">
-              Decision view
-            </p>
-            <h3
-              className={`mt-1 text-xl font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-            >
-              Menu Profitability Matrix
-            </h3>
-            <p className="mt-1 text-sm text-slate-400">
-              Find dishes worth promoting, optimizing, or reviewing.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-[10px] text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> High
-              margin
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500" /> Review
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.35fr_0.65fr]">
-          <div
-            className={`h-80 rounded-[22px] border p-3 ${
-              isDark
-                ? "border-slate-700 bg-slate-950/70"
-                : "border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100"
-            }`}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart
-                margin={{ top: 12, right: 18, bottom: 12, left: 0 }}
-              >
-                <CartesianGrid
-                  stroke={isDark ? "#334155" : "#e2e8f0"}
-                  strokeDasharray="3 3"
-                />
-                <XAxis
-                  type="number"
-                  dataKey="sales"
-                  name="Sales index"
-                  domain={[0, 100]}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 11 }}
-                  label={{
-                    value: "Sales volume",
-                    position: "insideBottom",
-                    offset: -5,
-                    fill: isDark ? "#94a3b8" : "#64748b",
-                    fontSize: 11,
-                  }}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="margin"
-                  name="Margin"
-                  domain={[0, 100]}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 11 }}
-                  label={{
-                    value: "Margin %",
-                    angle: -90,
-                    position: "insideLeft",
-                    fill: isDark ? "#94a3b8" : "#64748b",
-                    fontSize: 11,
-                  }}
-                />
-                <ZAxis
-                  type="number"
-                  dataKey="waste"
-                  range={[80, 420]}
-                  name="Waste units"
-                />
-                <Tooltip
-                  cursor={{ strokeDasharray: "4 4" }}
-                  contentStyle={{
-                    backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                    border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-                    borderRadius: "12px",
-                    color: isDark ? "#f8fafc" : "#0f172a",
-                  }}
-                  formatter={(value: number, name: string) => [
-                    name === "Margin" ? `${value}%` : value,
-                    name,
-                  ]}
-                  labelFormatter={(label) => String(label)}
-                />
-                <Scatter data={filteredProfitabilityData} name="Menu items">
-                  {filteredProfitabilityData.map((item) => (
-                    <Cell key={item.name} fill={item.color} />
-                  ))}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-              <span>Menu item</span>
-              <span>Margin</span>
-              <span>Waste</span>
-            </div>
-            {filteredProfitabilityData.map((item) => (
-              <div
-                key={item.name}
-                className={`grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-2xl border px-3 py-3 text-xs ${
-                  isDark
-                    ? "border-slate-700 bg-slate-800/60"
-                    : "border-slate-200 bg-slate-50"
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_1.8fr]">
+        <Card theme={theme} className="p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h3
+                className={`text-sm font-bold ${
+                  isDark ? "text-slate-100" : "text-slate-900"
                 }`}
               >
-                <span
-                  className={`truncate font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}
-                >
-                  {item.name}
-                </span>
-                <span className="font-semibold text-emerald-500">
-                  {item.margin}%
-                </span>
-                <span className="font-semibold text-rose-500">
-                  {item.waste}
-                </span>
-              </div>
-            ))}
-            <p className="mt-2 text-[11px] leading-5 text-slate-400">
-              Bubble size represents leftover units. Prioritize items high on
-              the chart and small in size.
-            </p>
+                Waste Insights
+              </h3>
+              <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                Filter by reason and dish
+              </p>
+            </div>
           </div>
-        </div>
-      </Card>
 
-      <Card theme={theme} className="flex flex-col gap-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
-              Recommended next steps
-            </p>
+          <div className="space-y-3 text-xs">
+            <label className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+              Waste reason
+              <select
+                value={wasteReason}
+                onChange={(event) => setWasteReason(event.target.value)}
+                className={`mt-1 w-full rounded-xl border px-3 py-2 outline-none ${
+                  isDark
+                    ? "border-slate-700 bg-slate-800 text-slate-100"
+                    : "border-slate-200 bg-slate-50 text-slate-800"
+                }`}
+              >
+                <option value="all">All reasons</option>
+                <option value="overproduction">Overproduction</option>
+                <option value="expired">Expired stock</option>
+                <option value="returns">Customer returns</option>
+              </select>
+            </label>
+
+            <label className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+              Menu item
+              <select
+                value={menuItem}
+                onChange={(event) => setMenuItem(event.target.value)}
+                className={`mt-1 w-full rounded-xl border px-3 py-2 outline-none ${
+                  isDark
+                    ? "border-slate-700 bg-slate-800 text-slate-100"
+                    : "border-slate-200 bg-slate-50 text-slate-800"
+                }`}
+              >
+                <option value="all">All items</option>
+                <option value="teriyaki">Teriyaki Bento</option>
+                <option value="sashimi">Sashimi Plate</option>
+                <option value="soup">Miso Soup</option>
+              </select>
+            </label>
+
+            <label className="inline-flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={highWasteOnly}
+                onChange={(event) => setHighWasteOnly(event.target.checked)}
+                className="accent-blue-600"
+              />
+              <span className={isDark ? "text-slate-300" : "text-slate-600"}>
+                Show only high-waste items
+              </span>
+            </label>
+          </div>
+        </Card>
+
+        <Card theme={theme} className="p-4">
+          <div className="mb-4">
             <h3
-              className={`mt-1 text-xl font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
+              className={`text-sm font-bold ${
+                isDark ? "text-slate-100" : "text-slate-900"
+              }`}
             >
-              Turn today&apos;s waste data into action
+              Sales vs Margin by Dish
             </h3>
-            <p className="mt-1 text-sm text-slate-400">
-              Prioritized suggestions based on waste volume, item value, and
-              sell-through.
+            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              Operational profitability heatmap
             </p>
           </div>
-          <div
-            className={`rounded-2xl border px-4 py-3 text-right ${
-              isDark
-                ? "border-emerald-500/20 bg-emerald-500/10"
-                : "border-emerald-200 bg-emerald-50"
+
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={profitabilityData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#cbd5e1"} />
+                <XAxis dataKey="name" stroke={isDark ? "#94a3b8" : "#64748b"} />
+                <YAxis stroke={isDark ? "#94a3b8" : "#64748b"} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: isDark ? "#0f172a" : "#ffffff",
+                    borderColor: isDark ? "#334155" : "#e2e8f0",
+                    borderRadius: 16,
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="sales" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="margin" fill="#10b981" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
+
+      <Card theme={theme} className="p-4">
+        <div className="mb-4">
+          <h3
+            className={`text-sm font-bold ${
+              isDark ? "text-slate-100" : "text-slate-900"
             }`}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-600">
-              Potential recovery
-            </p>
-            <p className="mt-0.5 text-xl font-bold text-emerald-600">$246</p>
-          </div>
+            Productivity Lens
+          </h3>
+          <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            Distribution of waste and margin efficiency
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-          {recommendations.map((recommendation, index) => {
-            const recommendationTone = {
-              blue: isDark
-                ? "border-blue-400/20 bg-blue-400/10"
-                : "border-blue-100 bg-blue-50/70",
-              amber: isDark
-                ? "border-amber-400/20 bg-amber-400/10"
-                : "border-amber-100 bg-amber-50/70",
-              green: isDark
-                ? "border-emerald-400/20 bg-emerald-400/10"
-                : "border-emerald-100 bg-emerald-50/70",
-            }[recommendation.tone];
-
-            return (
-              <div
-                key={recommendation.title}
-                className={`flex flex-col justify-between gap-5 rounded-2xl border p-4 ${recommendationTone}`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      0{index + 1} / {recommendation.priority}
-                    </span>
-                    <span className="text-lg" aria-hidden="true">
-                      {index === 0 ? "↗" : index === 1 ? "!" : "✓"}
-                    </span>
-                  </div>
-                  <h4
-                    className={`mt-3 text-sm font-semibold leading-5 ${isDark ? "text-slate-100" : "text-slate-900"}`}
-                  >
-                    {recommendation.title}
-                  </h4>
-                  <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                    {recommendation.description}
-                  </p>
-                </div>
-                <div
-                  className={`border-t pt-3 text-xs font-semibold ${
-                    isDark
-                      ? "border-white/10 text-slate-200"
-                      : "border-black/5 text-slate-700"
-                  }`}
-                >
-                  {recommendation.impact}
-                </div>
-              </div>
-            );
-          })}
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart>
+              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#cbd5e1"} />
+              <XAxis type="number" dataKey="sales" name="Sales" stroke={isDark ? "#94a3b8" : "#64748b"} />
+              <YAxis type="number" dataKey="waste" name="Waste" stroke={isDark ? "#94a3b8" : "#64748b"} />
+              <ZAxis range={[60, 400]} />
+              <Tooltip
+                cursor={{ strokeDasharray: "3 3" }}
+                contentStyle={{
+                  backgroundColor: isDark ? "#0f172a" : "#ffffff",
+                  borderColor: isDark ? "#334155" : "#e2e8f0",
+                  borderRadius: 16,
+                }}
+              />
+              <Scatter name="Dish Efficiency" data={profitabilityData} fill="#8b5cf6" />
+            </ScatterChart>
+          </ResponsiveContainer>
         </div>
       </Card>
+
+      <div className="text-xs text-slate-400">
+        {companyName ? `Current outlet: ${companyName}` : "No outlet selected"}
+      </div>
     </div>
   );
 };

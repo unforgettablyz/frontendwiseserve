@@ -1,12 +1,28 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
-import { Login } from "./pages/Login";
-import { Dashboard } from "./pages/Dashboard";
-import { DailyLog } from "./pages/DailyLog";
-import { MenuManager } from "./pages/MenuManager";
-import { AboutUs, ContactUs } from "./pages/InfoPages";
 import { DashboardSkeleton } from "./components/dashboard/DashboardSkeleton";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
+
+const Login = lazy(() =>
+  import("./pages/Login").then((module) => ({ default: module.Login })),
+);
+const Dashboard = lazy(() =>
+  import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
+);
+const DailyLog = lazy(() =>
+  import("./pages/DailyLog").then((module) => ({ default: module.DailyLog })),
+);
+const MenuManager = lazy(() =>
+  import("./pages/MenuManager").then((module) => ({
+    default: module.MenuManager,
+  })),
+);
+const AboutUs = lazy(() =>
+  import("./pages/InfoPages").then((module) => ({ default: module.AboutUs })),
+);
+const ContactUs = lazy(() =>
+  import("./pages/InfoPages").then((module) => ({ default: module.ContactUs })),
+);
 
 const outletsByRestaurant: Record<string, string[]> = {
   "Fry & Fire": [
@@ -141,56 +157,68 @@ export default function App() {
 
   return (
     <ErrorBoundary theme={theme}>
-      {!isAuthenticated ? (
-        <Login
-          onLogin={handleLogin}
-          theme={theme}
-          setTheme={setTheme}
-          language={language}
-          setLanguage={setLanguage}
-        />
-      ) : (
-        <AppLayout
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          title={t.pageTitles[activeTab]}
-          theme={theme}
-          setTheme={setTheme}
-          language={language}
-          setLanguage={setLanguage}
-          companyName={selectedCompany}
-          onLogout={handleLogout}
-          outlets={outletOptions}
-          onOutletChange={handleOutletChange}
-        >
-          {isLoading && activeTab === "dashboard" && (
-            <DashboardSkeleton theme={theme} />
-          )}
-          {!isLoading && activeTab === "dashboard" && (
-            <Dashboard
-              theme={theme}
-              language={language}
-              companyName={selectedCompany}
-            />
-          )}
-          {!isLoading && activeTab === "dailylog" && (
-            <DailyLog
-              theme={theme}
-              language={language}
-              companyName={selectedCompany}
-            />
-          )}
-          {!isLoading && activeTab === "menu" && (
-            <MenuManager theme={theme} language={language} />
-          )}
-          {!isLoading && activeTab === "about" && (
-            <AboutUs theme={theme} language={language} />
-          )}
-          {!isLoading && activeTab === "contact" && (
-            <ContactUs theme={theme} language={language} />
-          )}
-        </AppLayout>
-      )}
+      <Suspense fallback={null}>
+        {!isAuthenticated ? (
+          <Login
+            onLogin={handleLogin}
+            theme={theme}
+            setTheme={setTheme}
+            language={language}
+            setLanguage={setLanguage}
+          />
+        ) : (
+          <AppLayout
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            title={t.pageTitles[activeTab]}
+            theme={theme}
+            setTheme={setTheme}
+            language={language}
+            setLanguage={setLanguage}
+            companyName={selectedCompany}
+            onLogout={handleLogout}
+            outlets={outletOptions}
+            onOutletChange={handleOutletChange}
+          >
+            {isLoading && activeTab === "dashboard" && (
+              <DashboardSkeleton theme={theme} />
+            )}
+            {!isLoading && activeTab === "dashboard" && (
+              <Suspense fallback={null}>
+                <Dashboard
+                  theme={theme}
+                  language={language}
+                  companyName={selectedCompany}
+                />
+              </Suspense>
+            )}
+            {!isLoading && activeTab === "dailylog" && (
+              <Suspense fallback={null}>
+                <DailyLog
+                  theme={theme}
+                  language={language}
+                  companyName={selectedCompany}
+                />
+              </Suspense>
+            )}
+            {!isLoading && activeTab === "menu" && (
+              <Suspense fallback={null}>
+                <MenuManager theme={theme} language={language} />
+              </Suspense>
+            )}
+            {!isLoading && activeTab === "about" && (
+              <Suspense fallback={null}>
+                <AboutUs theme={theme} language={language} />
+              </Suspense>
+            )}
+            {!isLoading && activeTab === "contact" && (
+              <Suspense fallback={null}>
+                <ContactUs theme={theme} language={language} />
+              </Suspense>
+            )}
+          </AppLayout>
+        )}
+      </Suspense>
     </ErrorBoundary>
   );
 }

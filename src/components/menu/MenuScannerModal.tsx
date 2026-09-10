@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Modal from "../ui/Modal";
-import Button from "../ui/Button";
-import Input from "../ui/Input";
+import { Modal } from "../ui/Modal";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
 import { CategoryType, ScannedMenuItem } from "../../models/Menu";
 
 type Theme = "light" | "dark";
@@ -87,7 +87,6 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [stagedItems, setStagedItems] = useState<ScannedMenuItem[]>([]);
 
-  // Handle Drag & Drop / File Select
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -97,11 +96,9 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
     }
   };
 
-  // Mock AI Extraction Call (This will connect to POST /api/v1/ocr/parse-menu)
   const simulateAiScan = (_file: File) => {
     setIsScanning(true);
     setTimeout(() => {
-      // Mocked Vision API response
       const mockParsedData: ScannedMenuItem[] = [
         {
           tempId: "1",
@@ -167,7 +164,6 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
       theme={theme}
     >
       <div className="space-y-6">
-        {/* Step 1: Upload Zone */}
         {!previewUrl ? (
           <div
             className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
@@ -180,12 +176,16 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
               <CameraIcon />
               <div>
                 <p
-                  className={`text-sm font-semibold ${isDark ? "text-slate-200" : "text-slate-700"}`}
+                  className={`text-sm font-semibold ${
+                    isDark ? "text-slate-200" : "text-slate-700"
+                  }`}
                 >
                   Drag & drop menu or recipe sheet photo
                 </p>
                 <p
-                  className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                  className={`text-xs mt-1 ${
+                    isDark ? "text-slate-400" : "text-slate-500"
+                  }`}
                 >
                   Supports PNG, JPG, or PDF up to 10MB
                 </p>
@@ -203,7 +203,9 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
           </div>
         ) : (
           <div
-            className={`flex items-center space-x-4 p-3 rounded-lg ${isDark ? "bg-slate-800/60" : "bg-slate-100"}`}
+            className={`flex items-center space-x-4 p-3 rounded-lg ${
+              isDark ? "bg-slate-800/60" : "bg-slate-100"
+            }`}
           >
             <img
               src={previewUrl}
@@ -212,12 +214,16 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
             />
             <div className="flex-1 min-w-0">
               <p
-                className={`text-xs font-semibold truncate ${isDark ? "text-slate-100" : "text-slate-800"}`}
+                className={`text-xs font-semibold truncate ${
+                  isDark ? "text-slate-100" : "text-slate-800"
+                }`}
               >
                 {selectedFile?.name}
               </p>
               <div
-                className={`mt-1 flex items-center gap-1.5 text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                className={`mt-1 flex items-center gap-1.5 text-xs ${
+                  isDark ? "text-slate-400" : "text-slate-500"
+                }`}
               >
                 {isScanning ? (
                   <>
@@ -243,24 +249,26 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
           </div>
         )}
 
-        {/* Step 2: Loading Indicator */}
         {isScanning && (
           <div className="flex flex-col items-center py-6 space-y-2">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p
-              className={`text-xs font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}
+              className={`text-xs font-medium ${
+                isDark ? "text-slate-300" : "text-slate-600"
+              }`}
             >
               Parsing dish names, prices, and prep costs...
             </p>
           </div>
         )}
 
-        {/* Step 3: Editable Staging Review Grid */}
         {!isScanning && stagedItems.length > 0 && (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <h4
-                className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                className={`text-xs font-bold uppercase tracking-wider ${
+                  isDark ? "text-slate-300" : "text-slate-700"
+                }`}
               >
                 Extracted Items ({stagedItems.length})
               </h4>
@@ -272,14 +280,19 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
             </div>
 
             <div
-              className={`max-h-60 overflow-y-auto border rounded-lg divide-y ${isDark ? "border-slate-700 divide-slate-700 bg-slate-900" : "border-slate-200 divide-slate-100 bg-white"}`}
+              className={`max-h-60 overflow-y-auto border rounded-lg divide-y ${
+                isDark
+                  ? "border-slate-700 divide-slate-700 bg-slate-900"
+                  : "border-slate-200 divide-slate-100 bg-white"
+              }`}
             >
               {stagedItems.map((item) => (
                 <div
                   key={item.tempId}
-                  className={`p-3 grid grid-cols-12 gap-2 items-center text-xs ${isDark ? "bg-slate-900" : "bg-white"}`}
+                  className={`p-3 grid grid-cols-12 gap-2 items-center text-xs ${
+                    isDark ? "bg-slate-900" : "bg-white"
+                  }`}
                 >
-                  {/* Dish Name */}
                   <div className="col-span-4">
                     <Input
                       theme={theme}
@@ -295,7 +308,6 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                     />
                   </div>
 
-                  {/* Category Dropdown */}
                   <div className="col-span-3">
                     <select
                       value={item.category}
@@ -306,7 +318,11 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                           e.target.value as CategoryType,
                         )
                       }
-                      className={`w-full border rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 ${isDark ? "border-slate-600 bg-slate-800 text-slate-100" : "border-slate-200 bg-white text-slate-800"}`}
+                      className={`w-full border rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 ${
+                        isDark
+                          ? "border-slate-600 bg-slate-800 text-slate-100"
+                          : "border-slate-200 bg-white text-slate-800"
+                      }`}
                     >
                       {CATEGORY_OPTIONS.map((cat) => (
                         <option key={cat} value={cat}>
@@ -316,7 +332,6 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                     </select>
                   </div>
 
-                  {/* Price */}
                   <div className="col-span-2">
                     <Input
                       theme={theme}
@@ -333,7 +348,6 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                     />
                   </div>
 
-                  {/* Prep Cost */}
                   <div className="col-span-2">
                     <Input
                       theme={theme}
@@ -350,7 +364,6 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                     />
                   </div>
 
-                  {/* Remove Button */}
                   <div className="col-span-1 text-right">
                     <button
                       onClick={() => handleRemoveStagedItem(item.tempId)}
@@ -367,9 +380,10 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
           </div>
         )}
 
-        {/* Footer Actions */}
         <div
-          className={`flex justify-end space-x-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-slate-100"}`}
+          className={`flex justify-end space-x-3 pt-3 border-t ${
+            isDark ? "border-slate-700" : "border-slate-100"
+          }`}
         >
           <Button variant="secondary" theme={theme} onClick={onClose}>
             Cancel

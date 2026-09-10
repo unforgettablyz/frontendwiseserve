@@ -5,6 +5,7 @@ import { Button } from "../components/ui/Button";
 interface DailyLogProps {
   theme?: "light" | "dark";
   language?: "en" | "bm";
+  companyName?: string;
 }
 
 export const DailyLog = ({ theme = "light" }: DailyLogProps) => {

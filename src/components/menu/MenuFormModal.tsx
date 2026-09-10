@@ -75,7 +75,9 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
-            className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+            className={`block text-xs font-semibold mb-1 ${
+              isDark ? "text-slate-300" : "text-slate-700"
+            }`}
           >
             Item Name
           </label>
@@ -90,14 +92,20 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
 
         <div>
           <label
-            className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+            className={`block text-xs font-semibold mb-1 ${
+              isDark ? "text-slate-300" : "text-slate-700"
+            }`}
           >
             Category
           </label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as CategoryType)}
-            className={`w-full border rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 ${isDark ? "border-slate-600 bg-slate-800 text-slate-100" : "border-slate-200 bg-white text-slate-800"}`}
+            className={`w-full border rounded-md p-2 text-xs focus:ring-1 focus:ring-slate-900 ${
+              isDark
+                ? "border-slate-600 bg-slate-800 text-slate-100"
+                : "border-slate-200 bg-white text-slate-800"
+            }`}
           >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -110,7 +118,9 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label
-              className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+              className={`block text-xs font-semibold mb-1 ${
+                isDark ? "text-slate-300" : "text-slate-700"
+              }`}
             >
               Selling Price ($)
             </label>
@@ -127,7 +137,9 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
 
           <div>
             <label
-              className={`block text-xs font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+              className={`block text-xs font-semibold mb-1 ${
+                isDark ? "text-slate-300" : "text-slate-700"
+              }`}
             >
               Prep Cost ($)
             </label>
@@ -144,7 +156,9 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
         </div>
 
         <div
-          className={`flex justify-end space-x-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-slate-100"}`}
+          className={`flex justify-end space-x-3 pt-3 border-t ${
+            isDark ? "border-slate-700" : "border-slate-100"
+          }`}
         >
           <Button
             variant="secondary"

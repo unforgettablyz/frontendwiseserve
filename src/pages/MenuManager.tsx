@@ -66,12 +66,10 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  // Modals state
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
-  // 1. Fetch menu items from Express backend on mount
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
@@ -108,17 +106,14 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
     setIsFormOpen(true);
   };
 
-  // 2. Persist Create/Update actions to Backend
   const handleSaveItem = async (itemData: Partial<MenuItem>) => {
     try {
       if (editingItem) {
-        // PUT /api/v1/menu/:id
         const updated = await menuRepository.update(editingItem.id, itemData);
         setMenuItems((prev) =>
           prev.map((item) => (item.id === editingItem.id ? updated : item)),
         );
       } else {
-        // POST /api/v1/menu
         const created = await menuRepository.create({
           name: itemData.name || "",
           category: itemData.category || "Mains",
@@ -133,7 +128,6 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
     }
   };
 
-  // 3. Batch insert AI scanned items into Backend
   const handleImportScannedItems = async (scanned: ScannedMenuItem[]) => {
     try {
       const promises = scanned.map((item) =>
@@ -157,12 +151,16 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1
-            className={`text-2xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
+            className={`text-2xl font-bold tracking-tight ${
+              isDark ? "text-slate-100" : "text-slate-900"
+            }`}
           >
             Menu Management
           </h1>
           <p
-            className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+            className={`text-xs mt-1 ${
+              isDark ? "text-slate-400" : "text-slate-500"
+            }`}
           >
             Manage active recipes, selling prices, and standard baseline
             production costs.
@@ -194,7 +192,9 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
           <div className="w-full md:w-72">
             <div className="relative">
               <span
-                className={`pointer-events-none absolute inset-y-0 left-3 flex items-center ${isDark ? "text-slate-400" : "text-slate-400"}`}
+                className={`pointer-events-none absolute inset-y-0 left-3 flex items-center ${
+                  isDark ? "text-slate-400" : "text-slate-400"
+                }`}
               >
                 <SearchIcon />
               </span>
@@ -252,7 +252,11 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
               </tr>
             </thead>
             <tbody
-              className={`text-xs ${isDark ? "divide-y divide-slate-700 text-slate-300" : "divide-y divide-slate-100 text-slate-700"}`}
+              className={`text-xs ${
+                isDark
+                  ? "divide-y divide-slate-700 text-slate-300"
+                  : "divide-y divide-slate-100 text-slate-700"
+              }`}
             >
               {loading ? (
                 <tr>
@@ -286,7 +290,9 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
                     }
                   >
                     <td
-                      className={`py-3.5 px-4 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}
+                      className={`py-3.5 px-4 font-semibold ${
+                        isDark ? "text-slate-100" : "text-slate-900"
+                      }`}
                     >
                       {item.name}
                     </td>
@@ -302,12 +308,16 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
                       </span>
                     </td>
                     <td
-                      className={`py-3.5 px-4 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}
+                      className={`py-3.5 px-4 font-semibold ${
+                        isDark ? "text-slate-100" : "text-slate-900"
+                      }`}
                     >
                       ${item.price.toFixed(2)}
                     </td>
                     <td
-                      className={`py-3.5 px-4 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                      className={`py-3.5 px-4 ${
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      }`}
                     >
                       ${item.costToProduce.toFixed(2)}
                     </td>
@@ -329,7 +339,11 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => handleOpenEditModal(item)}
-                        className={`text-xs font-medium transition-colors ${isDark ? "text-slate-300 hover:text-slate-100" : "text-slate-500 hover:text-slate-900"}`}
+                        className={`text-xs font-medium transition-colors ${
+                          isDark
+                            ? "text-slate-300 hover:text-slate-100"
+                            : "text-slate-500 hover:text-slate-900"
+                        }`}
                       >
                         Edit
                       </button>

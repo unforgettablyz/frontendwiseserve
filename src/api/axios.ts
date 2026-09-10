@@ -7,13 +7,10 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to attach auth headers automatically
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Attach demo header as required by backend handbook
     config.headers.authCode = "123";
 
-    // Attach JWT token if user is logged in
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
