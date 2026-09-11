@@ -225,7 +225,11 @@ export default function App() {
             )}
             {!isLoading && activeTab === "home" && (
               <Suspense fallback={null}>
-                <AboutUs theme={theme} language={language} />
+                <AboutUs
+                  theme={theme}
+                  language={language}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                />
               </Suspense>
             )}
             {!isLoading && activeTab === "promotions" && (
