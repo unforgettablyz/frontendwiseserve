@@ -20,8 +20,15 @@ const MenuManager = lazy(() =>
 const AboutUs = lazy(() =>
   import("./pages/InfoPages").then((module) => ({ default: module.AboutUs })),
 );
-const ContactUs = lazy(() =>
-  import("./pages/InfoPages").then((module) => ({ default: module.ContactUs })),
+const Promotions = lazy(() =>
+  import("./pages/InfoPages").then((module) => ({
+    default: module.Promotions,
+  })),
+);
+const ExpirationAlerts = lazy(() =>
+  import("./pages/InfoPages").then((module) => ({
+    default: module.ExpirationAlerts,
+  })),
 );
 
 const outletsByRestaurant: Record<string, string[]> = {
@@ -50,7 +57,13 @@ const outletsByRestaurant: Record<string, string[]> = {
 
 type Theme = "light" | "dark";
 type Language = "en" | "bm";
-type Tab = "dashboard" | "dailylog" | "menu" | "about" | "contact";
+type Tab =
+  | "home"
+  | "dashboard"
+  | "dailylog"
+  | "menu"
+  | "promotions"
+  | "expiration";
 
 interface Translations {
   pageTitles: Record<Tab, string>;
@@ -71,25 +84,27 @@ export default function App() {
       window.localStorage.getItem("wiseserve-outlet") ??
       "Fry & Fire - Central Outlet",
   );
-  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [activeTab, setActiveTab] = useState<Tab>("home");
   const [theme, setTheme] = useState<Theme>("light");
   const [language, setLanguage] = useState<Language>("en");
 
   const translations: Record<Language, Translations> = {
     en: {
       pageTitles: {
+        home: "Home",
         dashboard: "Analytics Dashboard",
         dailylog: "Daily Operational Log",
         menu: "Menu Management",
-        about: "About WiseServe",
-        contact: "Contact Support",
+        promotions: "Promotions",
+        expiration: "Expiration Alerts",
       },
       sidebar: {
-        dashboard: "Analytics",
+        home: "Home",
+        dashboard: "Dashboard",
         dailylog: "Daily Log",
         menu: "Menu Manager",
-        about: "About Us",
-        contact: "Contact Us",
+        promotions: "Promotions",
+        expiration: "Expiration alerts",
       },
       header: {
         operations: "Operations",
@@ -98,18 +113,20 @@ export default function App() {
     },
     bm: {
       pageTitles: {
+        home: "Laman Utama",
         dashboard: "Papan Pemuka Analitik",
         dailylog: "Log Operasi Harian",
         menu: "Pengurusan Menu",
-        about: "Tentang WiseServe",
-        contact: "Hubungi Sokongan",
+        promotions: "Promosi",
+        expiration: "Amaran Tamat Tempoh",
       },
       sidebar: {
-        dashboard: "Analitik",
+        home: "Laman Utama",
+        dashboard: "Papan Pemuka",
         dailylog: "Log Harian",
         menu: "Pengurus Menu",
-        about: "Tentang Kami",
-        contact: "Hubungi Kami",
+        promotions: "Promosi",
+        expiration: "Amaran tamat tempoh",
       },
       header: {
         operations: "Operasi",
@@ -206,14 +223,19 @@ export default function App() {
                 <MenuManager theme={theme} language={language} />
               </Suspense>
             )}
-            {!isLoading && activeTab === "about" && (
+            {!isLoading && activeTab === "home" && (
               <Suspense fallback={null}>
                 <AboutUs theme={theme} language={language} />
               </Suspense>
             )}
-            {!isLoading && activeTab === "contact" && (
+            {!isLoading && activeTab === "promotions" && (
               <Suspense fallback={null}>
-                <ContactUs theme={theme} language={language} />
+                <Promotions theme={theme} language={language} />
+              </Suspense>
+            )}
+            {!isLoading && activeTab === "expiration" && (
+              <Suspense fallback={null}>
+                <ExpirationAlerts theme={theme} language={language} />
               </Suspense>
             )}
           </AppLayout>

@@ -8,7 +8,13 @@ import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 
 type Theme = "light" | "dark";
-type Tab = "dashboard" | "dailylog" | "menu" | "about" | "contact";
+type Tab =
+  | "home"
+  | "dashboard"
+  | "dailylog"
+  | "menu"
+  | "promotions"
+  | "expiration";
 type Language = "en" | "bm";
 
 interface AppLayoutProps {

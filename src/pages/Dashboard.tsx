@@ -7,6 +7,7 @@ interface DashboardProps {
 }
 
 import { useState } from "react";
+import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import {
   Area,
@@ -30,6 +31,10 @@ import {
 export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
   const isDark = theme === "dark";
   const [dateRange, setDateRange] = useState("7");
+
+  const handleExportPdf = () => {
+    window.print();
+  };
   const [wasteReason, setWasteReason] = useState("all");
   const [menuItem, setMenuItem] = useState("all");
   const [highWasteOnly, setHighWasteOnly] = useState(false);
@@ -157,6 +162,21 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1
+            className={`text-2xl font-bold tracking-tight ${
+              isDark ? "text-slate-100" : "text-slate-900"
+            }`}
+          >
+            Dashboard Overview
+          </h1>
+        </div>
+        <Button theme={theme} onClick={handleExportPdf}>
+          Export PDF
+        </Button>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {mockMetrics.map((metric) => (
           <Card key={metric.label} theme={theme} className="p-4">
@@ -198,7 +218,9 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               >
                 Revenue vs Waste
               </h3>
-              <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              <p
+                className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+              >
                 Daily performance snapshot
               </p>
             </div>
@@ -224,7 +246,10 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
                     <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#cbd5e1"} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? "#334155" : "#cbd5e1"}
+                />
                 <XAxis dataKey="day" stroke={isDark ? "#94a3b8" : "#64748b"} />
                 <YAxis stroke={isDark ? "#94a3b8" : "#64748b"} />
                 <Tooltip
@@ -234,7 +259,12 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
                     borderRadius: 16,
                   }}
                 />
-                <Area type="monotone" dataKey="sales" stroke="#4f46e5" fill="url(#salesFill)" />
+                <Area
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="#4f46e5"
+                  fill="url(#salesFill)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -249,7 +279,9 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
             >
               Waste Breakdown
             </h3>
-            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            <p
+              className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+            >
               Root causes this week
             </p>
           </div>
@@ -257,7 +289,14 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={wasteBreakdown} dataKey="value" nameKey="name" innerRadius={48} outerRadius={74} paddingAngle={3}>
+                <Pie
+                  data={wasteBreakdown}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={48}
+                  outerRadius={74}
+                  paddingAngle={3}
+                >
                   {wasteBreakdown.map((entry) => (
                     <Cell
                       key={entry.name}
@@ -290,14 +329,18 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               >
                 Waste Insights
               </h3>
-              <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              <p
+                className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+              >
                 Filter by reason and dish
               </p>
             </div>
           </div>
 
           <div className="space-y-3 text-xs">
-            <label className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            <label
+              className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}
+            >
               Waste reason
               <select
                 value={wasteReason}
@@ -315,7 +358,9 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               </select>
             </label>
 
-            <label className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            <label
+              className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}
+            >
               Menu item
               <select
                 value={menuItem}
@@ -356,7 +401,9 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
             >
               Sales vs Margin by Dish
             </h3>
-            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            <p
+              className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+            >
               Operational profitability heatmap
             </p>
           </div>
@@ -364,7 +411,10 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={profitabilityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#cbd5e1"} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? "#334155" : "#cbd5e1"}
+                />
                 <XAxis dataKey="name" stroke={isDark ? "#94a3b8" : "#64748b"} />
                 <YAxis stroke={isDark ? "#94a3b8" : "#64748b"} />
                 <Tooltip
@@ -392,7 +442,9 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
           >
             Productivity Lens
           </h3>
-          <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          <p
+            className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
+          >
             Distribution of waste and margin efficiency
           </p>
         </div>
@@ -400,9 +452,22 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart>
-              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#cbd5e1"} />
-              <XAxis type="number" dataKey="sales" name="Sales" stroke={isDark ? "#94a3b8" : "#64748b"} />
-              <YAxis type="number" dataKey="waste" name="Waste" stroke={isDark ? "#94a3b8" : "#64748b"} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={isDark ? "#334155" : "#cbd5e1"}
+              />
+              <XAxis
+                type="number"
+                dataKey="sales"
+                name="Sales"
+                stroke={isDark ? "#94a3b8" : "#64748b"}
+              />
+              <YAxis
+                type="number"
+                dataKey="waste"
+                name="Waste"
+                stroke={isDark ? "#94a3b8" : "#64748b"}
+              />
               <ZAxis range={[60, 400]} />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
@@ -412,7 +477,11 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
                   borderRadius: 16,
                 }}
               />
-              <Scatter name="Dish Efficiency" data={profitabilityData} fill="#8b5cf6" />
+              <Scatter
+                name="Dish Efficiency"
+                data={profitabilityData}
+                fill="#8b5cf6"
+              />
             </ScatterChart>
           </ResponsiveContainer>
         </div>

@@ -3,7 +3,13 @@ import { BrandMark } from "../ui/BrandMark";
 
 type Theme = "light" | "dark";
 type Language = "en" | "bm";
-type Tab = "dashboard" | "dailylog" | "menu" | "about" | "contact";
+type Tab =
+  | "home"
+  | "dashboard"
+  | "dailylog"
+  | "menu"
+  | "promotions"
+  | "expiration";
 
 interface SidebarProps {
   activeTab: Tab;
@@ -29,30 +35,30 @@ export const Sidebar = ({
   const isDark = theme === "dark";
   const labels: Record<Language, Record<Tab, string>> = {
     en: {
-      dashboard: "Analytics",
+      home: "Home",
+      dashboard: "Dashboard",
       dailylog: "Daily Log",
       menu: "Menu Manager",
-      about: "About Us",
-      contact: "Contact Us",
+      promotions: "Promotions",
+      expiration: "Expiration alerts",
     },
     bm: {
-      dashboard: "Analitik",
+      home: "Laman Utama",
+      dashboard: "Papan Pemuka",
       dailylog: "Log Harian",
       menu: "Pengurus Menu",
-      about: "Tentang Kami",
-      contact: "Hubungi Kami",
+      promotions: "Promosi",
+      expiration: "Amaran tamat tempoh",
     },
   };
 
   const menuItems: { id: Tab; label: string }[] = [
+    { id: "home", label: labels[language].home },
     { id: "dashboard", label: labels[language].dashboard },
     { id: "dailylog", label: labels[language].dailylog },
     { id: "menu", label: labels[language].menu },
-  ];
-
-  const supportItems: { id: Tab; label: string }[] = [
-    { id: "about", label: labels[language].about },
-    { id: "contact", label: labels[language].contact },
+    { id: "promotions", label: labels[language].promotions },
+    { id: "expiration", label: labels[language].expiration },
   ];
 
   return (
@@ -144,35 +150,6 @@ export const Sidebar = ({
             </button>
           ))}
         </nav>
-
-        <div className="mt-8">
-          <p className="mb-2 px-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-            {language === "bm" ? "Maklumat" : "Information"}
-          </p>
-          <nav
-            className="flex flex-col gap-2"
-            aria-label="Information navigation"
-          >
-            {supportItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200 ${
-                  activeTab === item.id
-                    ? isDark
-                      ? "bg-slate-100 text-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.4)]"
-                      : "bg-slate-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.18)]"
-                    : isDark
-                      ? "text-slate-400 hover:bg-slate-800/90 hover:text-slate-100"
-                      : "text-slate-600 hover:bg-white/80 hover:text-slate-900"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        </div>
       </div>
 
       <footer
