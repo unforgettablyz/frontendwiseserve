@@ -266,3 +266,5 @@ export const ContactUs = ({
     </div>
   );
 };
+
+export default AboutUs;

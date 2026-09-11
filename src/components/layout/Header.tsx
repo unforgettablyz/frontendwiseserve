@@ -1,7 +1,7 @@
 import {
   useState,
   type Dispatch,
-  type FormEvent,
+  type SyntheticEvent,
   type SetStateAction,
 } from "react";
 import { Button } from "../ui/Button";
@@ -43,7 +43,7 @@ export const Header = ({
   const [profileName, setProfileName] = useState(user);
   const [profileEmail, setProfileEmail] = useState("manager@wiseserve.com");
 
-  const handleProfileSave = (event: FormEvent<HTMLFormElement>) => {
+  const handleProfileSave = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsProfileOpen(false);
   };
@@ -104,10 +104,12 @@ export const Header = ({
               : "border-slate-200 bg-slate-100"
           }`}
         >
-          {[
-            { code: "en", label: "ENG" },
-            { code: "bm", label: "BM" },
-          ].map((option: { code: Language; label: string }) => (
+          {(
+            [
+              { code: "en", label: "ENG" },
+              { code: "bm", label: "BM" },
+            ] as const
+          ).map((option) => (
             <button
               key={option.code}
               type="button"
@@ -313,3 +315,5 @@ export const Header = ({
     </header>
   );
 };
+
+export default Header;

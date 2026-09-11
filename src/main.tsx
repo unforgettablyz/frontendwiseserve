@@ -17,3 +17,5 @@ createRoot(rootElement).render(
     {/* </ErrorBoundary> */}
   </StrictMode>,
 );
+
+export default App;
