@@ -75,15 +75,29 @@ interface Translations {
 }
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => window.localStorage.getItem("wiseserve-authenticated") === "true",
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const rememberMeEnabled =
+      window.localStorage.getItem("wiseserve-remember-me") === "true";
+
+    return (
+      rememberMeEnabled &&
+      window.localStorage.getItem("wiseserve-authenticated") === "true"
+    );
+  });
+  const [rememberMe, setRememberMe] = useState(
+    () => window.localStorage.getItem("wiseserve-remember-me") === "true",
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState(
-    () =>
-      window.localStorage.getItem("wiseserve-outlet") ??
-      "Fry & Fire - Central Outlet",
-  );
+  const [selectedCompany, setSelectedCompany] = useState(() => {
+    const rememberMeEnabled =
+      window.localStorage.getItem("wiseserve-remember-me") === "true";
+
+    return (
+      (rememberMeEnabled
+        ? window.localStorage.getItem("wiseserve-outlet")
+        : null) ?? "Fry & Fire - Central Outlet"
+    );
+  });
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [theme, setTheme] = useState<Theme>("light");
   const [language, setLanguage] = useState<Language>("en");
@@ -153,12 +167,21 @@ export default function App() {
     return () => window.clearTimeout(loadingTimer);
   }, [isAuthenticated, isLoading]);
 
-  const handleLogin = (companyName: string) => {
+  const handleLogin = (companyName: string, rememberMeValue = false) => {
     setSelectedCompany(companyName);
     setIsAuthenticated(true);
     setIsLoading(true);
-    window.localStorage.setItem("wiseserve-authenticated", "true");
-    window.localStorage.setItem("wiseserve-outlet", companyName);
+    setRememberMe(rememberMeValue);
+
+    if (rememberMeValue) {
+      window.localStorage.setItem("wiseserve-authenticated", "true");
+      window.localStorage.setItem("wiseserve-outlet", companyName);
+      window.localStorage.setItem("wiseserve-remember-me", "true");
+    } else {
+      window.localStorage.setItem("wiseserve-remember-me", "false");
+      window.localStorage.removeItem("wiseserve-authenticated");
+      window.localStorage.removeItem("wiseserve-outlet");
+    }
   };
 
   const handleOutletChange = (companyName: string) => {
@@ -169,7 +192,10 @@ export default function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setIsLoading(false);
+    setRememberMe(false);
     window.localStorage.removeItem("wiseserve-authenticated");
+    window.localStorage.removeItem("wiseserve-outlet");
+    window.localStorage.removeItem("wiseserve-remember-me");
   };
 
   return (

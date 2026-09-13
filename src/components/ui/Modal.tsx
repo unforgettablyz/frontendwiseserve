@@ -24,31 +24,45 @@ export const Modal = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/30 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/35 p-4 backdrop-blur-md"
       role="presentation"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`my-4 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-[28px] border p-6 shadow-[0_28px_80px_rgba(15,23,42,0.2)] transition-colors duration-300 ${
+        className={`my-4 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-[28px] border p-5 shadow-[0_28px_80px_rgba(15,23,42,0.18)] transition-colors duration-300 ${
           isDark
-            ? "bg-slate-900 border-slate-700 text-slate-100"
-            : "bg-white border-slate-200/80 text-slate-800"
+            ? "border-slate-700 bg-slate-900 text-slate-100"
+            : "border-[#BFE7E8] bg-[#F1FCFC] text-slate-800"
         }`}
       >
-        <div className="flex justify-between items-center mb-5">
-          <h3 id="modal-title" className="text-lg font-semibold tracking-tight">
-            {title}
-          </h3>
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-9 w-9 items-center justify-center rounded-2xl text-sm font-bold ${
+                isDark
+                  ? "bg-slate-800 text-cyan-300"
+                  : "bg-[#DDF7F4] text-[#0EA5A4]"
+              }`}
+            >
+              ✦
+            </div>
+            <h3
+              id="modal-title"
+              className="text-lg font-semibold tracking-[-0.03em]"
+            >
+              {title}
+            </h3>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className={`p-1.5 rounded-full transition-colors ${
+            className={`rounded-full p-1.5 transition-colors ${
               isDark
-                ? "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
-                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                ? "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+                : "text-slate-500 hover:bg-[#DDF7F4] hover:text-[#0F172A]"
             }`}
           >
             ✕

@@ -33,8 +33,181 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
   const [dateRange, setDateRange] = useState("7");
 
   const handleExportPdf = () => {
-    window.print();
+    const reportWindow = window.open("", "_blank", "width=1000,height=800");
+
+    if (!reportWindow) {
+      return;
+    }
+
+    const renderTable = (
+      title: string,
+      headers: string[],
+      rows: Array<Array<string | number>>,
+    ) => `
+      <section style="margin-bottom: 24px;">
+        <h3 style="margin:0 0 12px; font-size:18px; color:#0f172a;">${title}</h3>
+        <table style="width:100%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:12px;">
+          <thead>
+            <tr>
+              ${headers
+                .map(
+                  (header) =>
+                    `<th style="border:1px solid #cbd5e1; padding:8px; background:#f8fafc; text-align:left;">${header}</th>`,
+                )
+                .join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows
+              .map(
+                (row) =>
+                  `<tr>
+                    ${row
+                      .map(
+                        (cell) =>
+                          `<td style="border:1px solid #cbd5e1; padding:8px;">${cell}</td>`,
+                      )
+                      .join("")}
+                  </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </section>
+    `;
+
+    const htmlContent = `
+      <!doctype html>
+      <html>
+        <head>
+          <title>WiseServe Dashboard Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 32px; color: #0f172a; }
+            h1 { margin-bottom: 24px; font-size: 28px; }
+            p { margin: 6px 0; font-size: 12px; }
+            @media print {
+              body { margin: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>WiseServe Dashboard Analysis Report</h1>
+          <p><strong>Company:</strong> ${companyName ?? "WiseServe"}</p>
+          <p><strong>Date Range:</strong> ${dateRange === "30" ? "Last 30 days" : "Last 7 days"}</p>
+          <p><strong>Waste Reason:</strong> ${wasteReason}</p>
+          <p><strong>Menu Item:</strong> ${menuItem}</p>
+          <p><strong>High Waste Only:</strong> ${highWasteOnly ? "Yes" : "No"}</p>
+
+          ${renderTable(
+            "Summary Metrics",
+            ["Metric", "Value", "Change"],
+            mockMetrics.map((metric) => [
+              metric.label,
+              metric.value,
+              metric.change,
+            ]),
+          )}
+
+          ${renderTable(
+            "Revenue vs Waste",
+            ["Day", "Sales", "Waste"],
+            visibleWeeklyData.map((row) => [row.day, row.sales, row.waste]),
+          )}
+
+          ${renderTable(
+            "Revenue Trend",
+            ["Week", "Revenue", "Target"],
+            revenueTrend.map((row) => [row.week, row.revenue, row.target]),
+          )}
+
+          ${renderTable(
+            "Waste Breakdown",
+            ["Category", "Value"],
+            wasteBreakdown.map((row) => [row.name, row.value]),
+          )}
+
+          ${renderTable(
+            "Profitability Data",
+            ["Item", "Sales", "Margin", "Waste"],
+            profitabilityData.map((row) => [
+              row.name,
+              row.sales,
+              row.margin,
+              row.waste,
+            ]),
+          )}
+        </body>
+      </html>
+    `;
+
+    reportWindow.document.open();
+    reportWindow.document.write(htmlContent);
+    reportWindow.document.close();
+    reportWindow.focus();
+    reportWindow.print();
   };
+
+  const handleExportExcel = () => {
+    const csvRows: Array<Array<string>> = [
+      ["Dashboard Analysis Export"],
+      ["Date Range", dateRange === "30" ? "Last 30 days" : "Last 7 days"],
+      ["Waste Reason", wasteReason],
+      ["Menu Item", menuItem],
+      ["High Waste Only", highWasteOnly ? "Yes" : "No"],
+      [],
+      ["Summary Metrics", "Value", "Change"],
+      ...mockMetrics.map((metric) => [
+        metric.label,
+        metric.value,
+        metric.change,
+      ]),
+      [],
+      ["Revenue vs Waste", "Sales", "Waste"],
+      ...visibleWeeklyData.map((row) => [
+        row.day,
+        String(row.sales),
+        String(row.waste),
+      ]),
+      [],
+      ["Revenue Trend", "Revenue", "Target"],
+      ...revenueTrend.map((row) => [
+        row.week,
+        String(row.revenue),
+        String(row.target),
+      ]),
+      [],
+      ["Waste Breakdown", "Value"],
+      ...wasteBreakdown.map((row) => [row.name, String(row.value)]),
+      [],
+      ["Profitability Data", "Sales", "Margin", "Waste"],
+      ...profitabilityData.map((row) => [
+        row.name,
+        String(row.sales),
+        String(row.margin),
+        String(row.waste),
+      ]),
+    ];
+
+    const csvContent = csvRows
+      .map((row) =>
+        row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "wiseserve-dashboard-analysis.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const [wasteReason, setWasteReason] = useState("all");
   const [menuItem, setMenuItem] = useState("all");
   const [highWasteOnly, setHighWasteOnly] = useState(false);
@@ -172,9 +345,14 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
             Dashboard Overview
           </h1>
         </div>
-        <Button theme={theme} onClick={handleExportPdf}>
-          Export PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button theme={theme} variant="secondary" onClick={handleExportExcel}>
+            Export Excel
+          </Button>
+          <Button theme={theme} onClick={handleExportPdf}>
+            Export PDF
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

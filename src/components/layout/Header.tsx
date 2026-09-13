@@ -50,23 +50,23 @@ export const Header = ({
 
   return (
     <header
-      className={`h-20 border-b px-6 md:px-8 flex items-center justify-between backdrop-blur-xl transition-colors duration-300 ${
+      className={`relative z-40 isolate flex h-24 items-center justify-between border-b px-4 backdrop-blur-xl transition-colors duration-300 sm:px-6 md:px-8 ${
         isDark
-          ? "border-slate-800 bg-slate-900/70"
-          : "border-slate-200/80 bg-white/70"
+          ? "border-slate-800 bg-slate-900/80"
+          : "border-[#BFE7E8] bg-[#EAF7F7]/90"
       }`}
     >
-      <div>
+      <div className="flex items-center gap-4">
         {!isSidebarOpen && (
           <button
             type="button"
             onClick={onOpenSidebar}
             aria-label="Open sidebar"
             title="Open sidebar"
-            className={`mb-2 flex h-8 w-8 items-center justify-center rounded-xl border text-lg leading-none transition-colors ${
+            className={`flex h-10 w-10 items-center justify-center rounded-2xl border shadow-sm transition-all hover:-translate-y-0.5 ${
               isDark
-                ? "border-slate-700 text-slate-300 hover:bg-slate-800"
-                : "border-slate-200 text-slate-600 hover:bg-slate-100"
+                ? "border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                : "border-[#BFE7E8] bg-[#F2FBFB] text-slate-600 hover:bg-[#DDF7F4]"
             }`}
           >
             <svg
@@ -82,26 +82,43 @@ export const Header = ({
             </svg>
           </button>
         )}
-        <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">
-          {isBM ? "Operasi" : "Operations"}
-        </p>
-        <h1
-          className={`text-2xl font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-        >
-          {title}
-        </h1>
-        <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          {companyName}
-        </p>
+
+        <div className="flex flex-col">
+          <p
+            className={`text-[10px] font-semibold uppercase tracking-[0.28em] ${
+              isDark ? "text-slate-400" : "text-[#0EA5A4]"
+            }`}
+          >
+            {isBM ? "Operasi" : "Operations"}
+          </p>
+          <div className="mt-1 flex items-center gap-3">
+            <h1
+              className={`text-2xl font-bold tracking-[-0.06em] ${
+                isDark ? "text-slate-100" : "text-slate-900"
+              }`}
+            >
+              {title}
+            </h1>
+          </div>
+          <div
+            className={`mt-1 inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-medium ${
+              isDark
+                ? "border-slate-700 bg-slate-800/80 text-slate-300"
+                : "border-[#BFE7E8] bg-[#DDF7F4] text-[#0F172A]"
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            {companyName}
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
         <div
-          className={`inline-flex items-center gap-1 rounded-2xl border p-1 ${
+          className={`inline-flex items-center gap-1 rounded-2xl border p-1 shadow-sm ${
             isDark
               ? "border-slate-700 bg-slate-800"
-              : "border-slate-200 bg-slate-100"
+              : "border-[#BFE7E8] bg-[#F1FCFC]"
           }`}
         >
           {(
@@ -118,10 +135,10 @@ export const Header = ({
                 language === option.code
                   ? isDark
                     ? "bg-slate-100 text-slate-900"
-                    : "bg-slate-900 text-white"
+                    : "bg-[#DDF7F4] text-[#0F172A]"
                   : isDark
                     ? "text-slate-300 hover:text-white"
-                    : "text-slate-500 hover:text-slate-900"
+                    : "text-slate-600 hover:text-[#0F172A]"
               }`}
             >
               {option.label}
@@ -132,31 +149,31 @@ export const Header = ({
         <button
           type="button"
           onClick={onThemeToggle}
-          className={`inline-flex items-center justify-center w-10 h-10 rounded-2xl border transition-all duration-200 ${
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 ${
             isDark
               ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700"
-              : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
+              : "border-[#BFE7E8] bg-[#F1FCFC] text-[#0EA5A4] hover:bg-[#DDF7F4]"
           }`}
           aria-label="Toggle light and dark mode"
         >
-          {isDark ? "☀️" : "🌙"}
+          <span className="text-base leading-none">{isDark ? "☀" : "☾"}</span>
         </button>
 
-        <div className="relative">
+        <div className="relative z-50">
           <button
             type="button"
             onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
             aria-expanded={isProfileMenuOpen}
             aria-haspopup="menu"
             aria-label="Open profile menu"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl border shadow-sm ${
+            className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
               isDark
-                ? "bg-slate-800/90 border-slate-700"
-                : "bg-slate-100/90 border-slate-200"
-            } transition-all hover:-translate-y-0.5 hover:shadow-md`}
+                ? "border-slate-700 bg-slate-800/90"
+                : "border-[#BFE7E8] bg-[#F1FCFC]"
+            }`}
           >
             <div className="relative">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#dbeafe] to-[#bfdbfe] text-[#1d4ed8] text-xs flex items-center justify-center font-semibold shadow-inner">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] via-[#bfdbfe] to-[#a5f3fc] text-xs font-bold text-[#1d4ed8] shadow-inner">
                 {profileName.charAt(0).toUpperCase()}
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-100 bg-emerald-500" />
@@ -166,25 +183,35 @@ export const Header = ({
                 {isBM ? "Pengguna" : "User"}
               </span>
               <span
-                className={`text-sm font-medium ${isDark ? "text-slate-200" : "text-slate-700"}`}
+                className={`text-sm font-semibold ${isDark ? "text-slate-200" : "text-[#0F172A]"}`}
               >
                 {profileName}
               </span>
             </div>
             <span className="ml-1 text-xs text-slate-400" aria-hidden="true">
-              ⌄
+              ▾
             </span>
           </button>
 
           {isProfileMenuOpen && (
             <div
-              className={`absolute right-0 top-full z-30 mt-2 w-44 rounded-2xl border p-1.5 shadow-xl ${
+              className={`absolute right-0 top-full z-[60] mt-3 w-60 rounded-[24px] border p-2.5 shadow-[0_22px_50px_rgba(15,23,42,0.18)] ${
                 isDark
-                  ? "border-slate-700 bg-slate-900"
-                  : "border-slate-200 bg-white"
+                  ? "border-slate-700 bg-slate-900/95"
+                  : "border-[#BFE7E8] bg-[#F7FEFE]/95"
               }`}
               role="menu"
             >
+              <div
+                className={`mb-2 rounded-2xl px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] ${
+                  isDark
+                    ? "bg-slate-800 text-slate-400"
+                    : "bg-[#EAF7F7] text-[#0EA5A4]"
+                }`}
+              >
+                Account
+              </div>
+
               <button
                 type="button"
                 role="menuitem"
@@ -192,14 +219,29 @@ export const Header = ({
                   setIsProfileMenuOpen(false);
                   setIsProfileOpen(true);
                 }}
-                className={`w-full rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                className={`flex w-full items-center justify-between rounded-[18px] border px-3 py-2.5 text-left text-sm font-semibold transition-all duration-200 ${
                   isDark
-                    ? "text-slate-200 hover:bg-slate-800"
-                    : "text-slate-700 hover:bg-slate-100"
+                    ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/15"
+                    : "border-[#BFE7E8] bg-[#DDF7F4] text-[#0F172A] hover:bg-[#CFF3F0]"
                 }`}
               >
-                Edit Profile
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-xl text-[11px] ${
+                      isDark
+                        ? "bg-slate-800 text-cyan-300"
+                        : "bg-white text-[#0EA5A4]"
+                    }`}
+                  >
+                    ✦
+                  </span>
+                  Edit Profile
+                </span>
+                <span className="text-xs text-slate-400" aria-hidden="true">
+                  ↗
+                </span>
               </button>
+
               <button
                 type="button"
                 role="menuitem"
@@ -207,13 +249,27 @@ export const Header = ({
                   setIsProfileMenuOpen(false);
                   onLogout();
                 }}
-                className={`w-full rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                className={`mt-2 flex w-full items-center justify-between rounded-[18px] border px-3 py-2.5 text-left text-sm font-semibold transition-all duration-200 ${
                   isDark
-                    ? "text-red-300 hover:bg-red-500/10"
-                    : "text-red-600 hover:bg-red-50"
+                    ? "border-red-500/20 bg-red-500/10 text-red-200 hover:bg-red-500/15"
+                    : "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
                 }`}
               >
-                Log out
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-xl text-[11px] ${
+                      isDark
+                        ? "bg-slate-800 text-red-300"
+                        : "bg-white text-red-500"
+                    }`}
+                  >
+                    ⎋
+                  </span>
+                  Log out
+                </span>
+                <span className="text-xs" aria-hidden="true">
+                  →
+                </span>
               </button>
             </div>
           )}
