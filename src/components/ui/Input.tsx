@@ -1,38 +1,36 @@
-import type { InputHTMLAttributes } from "react";
+import React from "react";
 
-type Theme = "light" | "dark";
-
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  theme?: Theme;
+  theme?: "light" | "dark";
 }
 
-export const Input = ({
+export const Input: React.FC<InputProps> = ({
   label,
-  className = "",
   theme = "light",
+  className = "",
   ...props
-}: InputProps) => {
+}) => {
   const isDark = theme === "dark";
 
   return (
-    <div className="flex flex-col gap-1.5 w-full">
+    <div className="w-full">
       {label && (
         <label
-          className={`text-xs font-semibold tracking-[0.08em] uppercase pl-1 ${
-            isDark ? "text-slate-300" : "text-slate-500"
+          className={`block mb-1 text-xs font-medium ${
+            isDark ? "text-slate-300" : "text-slate-700"
           }`}
         >
           {label}
         </label>
       )}
       <input
-        className={`rounded-2xl px-4 py-2.5 text-sm outline-none transition-all duration-200 shadow-sm ${
-          isDark
-            ? "bg-slate-800 border border-slate-700 focus:border-blue-400 focus:bg-slate-900 text-slate-100 placeholder:text-slate-500"
-            : "bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-slate-800 placeholder:text-slate-400"
-        } ${className}`}
         {...props}
+        className={`w-full rounded-xl border px-3 py-2 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+          isDark
+            ? "bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-500"
+            : "bg-white border-slate-200 text-slate-800 placeholder-slate-400"
+        } ${className}`}
       />
     </div>
   );

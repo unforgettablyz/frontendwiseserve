@@ -1,25 +1,22 @@
-import type { ReactNode } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
-
-type Theme = "light" | "dark";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  children: ReactNode;
-  theme?: Theme;
+  children: React.ReactNode;
+  theme?: "light" | "dark";
 }
 
-export const Modal = ({
+export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
   children,
   theme = "light",
-}: ModalProps) => {
+}) => {
   if (!isOpen) return null;
-
   const isDark = theme === "dark";
 
   return createPortal(
@@ -56,7 +53,6 @@ export const Modal = ({
             </h3>
           </div>
           <button
-            type="button"
             onClick={onClose}
             aria-label="Close dialog"
             className={`rounded-full p-1.5 transition-colors ${
@@ -71,7 +67,7 @@ export const Modal = ({
         {children}
       </div>
     </div>,
-    document.body,
+    document.body, // Argumen kedua ditambah di sini
   );
 };
 

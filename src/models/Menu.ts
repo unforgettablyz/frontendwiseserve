@@ -1,18 +1,13 @@
-export type CategoryType =
-  | "Mains"
-  | "Appetizers"
-  | "Dessert"
-  | "Beverages"
-  | "Sides";
+export type CategoryType = "Mains" | "Appetizers" | "Dessert" | "Beverages";
 
 export interface MenuItem {
   id: number;
   name: string;
-  category: CategoryType | string;
+  category: CategoryType;
   sellingPrice: number;
-  costToProduce: number; // Prep Cost ($Loss = WasteUnits * PrepCost)
-  isActive?: boolean;
+  costToProduce?: number;
   soldQty?: number;
+  isActive: boolean;
 }
 
 export interface ScannedMenuItem {
