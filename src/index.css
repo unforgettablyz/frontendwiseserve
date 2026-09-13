@@ -2,8 +2,25 @@
 
 @layer components {
   .login-input {
-    @apply w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2.5 text-sm text-slate-200 outline-none transition-colors placeholder:text-slate-600 focus:border-blue-400/70 focus:bg-white/[0.04];
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    outline: none;
+    transition: border-color 150ms ease-in-out, background-color 150ms ease-in-out;
     color-scheme: dark;
+  }
+
+  .login-input::placeholder {
+    color: #475569;
+  }
+
+  .login-input:focus {
+    border-color: rgba(96, 165, 250, 0.7);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .login-input option {
@@ -12,8 +29,12 @@
   }
 
   .dashboard-filter {
-    @apply rounded-xl border px-3 py-2 text-sm outline-none transition-colors;
-    border-color: #334155;
+    border-radius: 0.75rem;
+    border: 1px solid #334155;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 150ms ease-in-out;
     background: #1e293b;
     color: #e2e8f0;
     color-scheme: dark;
