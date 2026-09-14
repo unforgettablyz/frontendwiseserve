@@ -1,34 +1,9 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { AppLayout } from "./components/layout/AppLayout";
-import { DashboardSkeleton } from "./components/dashboard/DashboardSkeleton";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
+import { AppRoutes } from "./routes/AppRoutes";
 
 const Login = lazy(() =>
   import("./pages/Login").then((module) => ({ default: module.Login })),
-);
-const Dashboard = lazy(() =>
-  import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
-);
-const DailyLog = lazy(() =>
-  import("./pages/DailyLog").then((module) => ({ default: module.DailyLog })),
-);
-const MenuManager = lazy(() =>
-  import("./pages/MenuManager").then((module) => ({
-    default: module.MenuManager,
-  })),
-);
-const AboutUs = lazy(() =>
-  import("./pages/InfoPages").then((module) => ({ default: module.AboutUs })),
-);
-const Promotions = lazy(() =>
-  import("./pages/InfoPages").then((module) => ({
-    default: module.Promotions,
-  })),
-);
-const ExpirationAlerts = lazy(() =>
-  import("./pages/InfoPages").then((module) => ({
-    default: module.ExpirationAlerts,
-  })),
 );
 
 const outletsByRestaurant: Record<string, string[]> = {
@@ -102,54 +77,6 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>("light");
   const [language, setLanguage] = useState<Language>("en");
 
-  const translations: Record<Language, Translations> = {
-    en: {
-      pageTitles: {
-        home: "Home",
-        dashboard: "Analytics Dashboard",
-        dailylog: "Daily Operational Log",
-        menu: "Menu Management",
-        promotions: "Promotions",
-        expiration: "Expiration Alerts",
-      },
-      sidebar: {
-        home: "Home",
-        dashboard: "Dashboard",
-        dailylog: "Daily Log",
-        menu: "Menu Manager",
-        promotions: "Promotions",
-        expiration: "Expiration alerts",
-      },
-      header: {
-        operations: "Operations",
-        user: "User",
-      },
-    },
-    bm: {
-      pageTitles: {
-        home: "Laman Utama",
-        dashboard: "Papan Pemuka Analitik",
-        dailylog: "Log Operasi Harian",
-        menu: "Pengurusan Menu",
-        promotions: "Promosi",
-        expiration: "Amaran Tamat Tempoh",
-      },
-      sidebar: {
-        home: "Laman Utama",
-        dashboard: "Papan Pemuka",
-        dailylog: "Log Harian",
-        menu: "Pengurus Menu",
-        promotions: "Promosi",
-        expiration: "Amaran tamat tempoh",
-      },
-      header: {
-        operations: "Operasi",
-        user: "Pengguna",
-      },
-    },
-  };
-
-  const t = translations[language];
   const restaurantName = selectedCompany.split(" - ")[0];
   const outletOptions = outletsByRestaurant[restaurantName] ?? [
     selectedCompany,
@@ -210,65 +137,19 @@ export default function App() {
             setLanguage={setLanguage}
           />
         ) : (
-          <AppLayout
+          <AppRoutes
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            title={t.pageTitles[activeTab]}
             theme={theme}
             setTheme={setTheme}
             language={language}
             setLanguage={setLanguage}
-            companyName={selectedCompany}
+            selectedCompany={selectedCompany}
             onLogout={handleLogout}
             outlets={outletOptions}
             onOutletChange={handleOutletChange}
-          >
-            {isLoading && activeTab === "dashboard" && (
-              <DashboardSkeleton theme={theme} />
-            )}
-            {!isLoading && activeTab === "dashboard" && (
-              <Suspense fallback={null}>
-                <Dashboard
-                  theme={theme}
-                  language={language}
-                  companyName={selectedCompany}
-                />
-              </Suspense>
-            )}
-            {!isLoading && activeTab === "dailylog" && (
-              <Suspense fallback={null}>
-                <DailyLog
-                  theme={theme}
-                  language={language}
-                  companyName={selectedCompany}
-                />
-              </Suspense>
-            )}
-            {!isLoading && activeTab === "menu" && (
-              <Suspense fallback={null}>
-                <MenuManager theme={theme} language={language} />
-              </Suspense>
-            )}
-            {!isLoading && activeTab === "home" && (
-              <Suspense fallback={null}>
-                <AboutUs
-                  theme={theme}
-                  language={language}
-                  onNavigate={(tab) => setActiveTab(tab)}
-                />
-              </Suspense>
-            )}
-            {!isLoading && activeTab === "promotions" && (
-              <Suspense fallback={null}>
-                <Promotions theme={theme} language={language} />
-              </Suspense>
-            )}
-            {!isLoading && activeTab === "expiration" && (
-              <Suspense fallback={null}>
-                <ExpirationAlerts theme={theme} language={language} />
-              </Suspense>
-            )}
-          </AppLayout>
+            isLoading={isLoading}
+          />
         )}
       </Suspense>
     </ErrorBoundary>

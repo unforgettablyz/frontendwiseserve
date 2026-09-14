@@ -9,6 +9,8 @@ interface DashboardProps {
 import { useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { AnalyticsChartSection } from "../components/analytics/AnalyticsChartSection";
+import { MetricCard } from "../components/analytics/MetricCard";
 import {
   Area,
   AreaChart,
@@ -357,51 +359,23 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {mockMetrics.map((metric) => (
-          <Card key={metric.label} theme={theme} className="p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p
-                  className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${
-                    isDark ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
-                  {metric.label}
-                </p>
-                <p
-                  className={`mt-2 text-2xl font-bold tracking-tight ${
-                    isDark ? "text-slate-100" : "text-slate-900"
-                  }`}
-                >
-                  {metric.value}
-                </p>
-              </div>
-              <span
-                className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${toneClasses[metric.tone]}`}
-              >
-                {metric.change}
-              </span>
-            </div>
-          </Card>
+          <MetricCard
+            key={metric.label}
+            theme={theme}
+            title={metric.label}
+            value={metric.value}
+            subtitle={metric.change}
+            tone={metric.tone as "blue" | "green" | "amber" | "red"}
+          />
         ))}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-        <Card theme={theme} className="p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3
-                className={`text-sm font-bold ${
-                  isDark ? "text-slate-100" : "text-slate-900"
-                }`}
-              >
-                Revenue vs Waste
-              </h3>
-              <p
-                className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-              >
-                Daily performance snapshot
-              </p>
-            </div>
+        <AnalyticsChartSection
+          theme={theme}
+          title="Revenue vs Waste"
+          subtitle="Daily performance snapshot"
+          rightContent={
             <select
               value={dateRange}
               onChange={(event) => setDateRange(event.target.value)}
@@ -414,7 +388,8 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
             </select>
-          </div>
+          }
+        >
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={visibleWeeklyData}>
@@ -446,24 +421,13 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </AnalyticsChartSection>
 
-        <Card theme={theme} className="p-4">
-          <div className="mb-4">
-            <h3
-              className={`text-sm font-bold ${
-                isDark ? "text-slate-100" : "text-slate-900"
-              }`}
-            >
-              Waste Breakdown
-            </h3>
-            <p
-              className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-            >
-              Root causes this week
-            </p>
-          </div>
-
+        <AnalyticsChartSection
+          theme={theme}
+          title="Waste Breakdown"
+          subtitle="Root causes this week"
+        >
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -493,28 +457,15 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </AnalyticsChartSection>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_1.8fr]">
-        <Card theme={theme} className="p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3
-                className={`text-sm font-bold ${
-                  isDark ? "text-slate-100" : "text-slate-900"
-                }`}
-              >
-                Waste Insights
-              </h3>
-              <p
-                className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-              >
-                Filter by reason and dish
-              </p>
-            </div>
-          </div>
-
+        <AnalyticsChartSection
+          theme={theme}
+          title="Waste Insights"
+          subtitle="Filter by reason and dish"
+        >
           <div className="space-y-3 text-xs">
             <label
               className={`block ${isDark ? "text-slate-300" : "text-slate-600"}`}
@@ -568,24 +519,13 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               </span>
             </label>
           </div>
-        </Card>
+        </AnalyticsChartSection>
 
-        <Card theme={theme} className="p-4">
-          <div className="mb-4">
-            <h3
-              className={`text-sm font-bold ${
-                isDark ? "text-slate-100" : "text-slate-900"
-              }`}
-            >
-              Sales vs Margin by Dish
-            </h3>
-            <p
-              className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-            >
-              Operational profitability heatmap
-            </p>
-          </div>
-
+        <AnalyticsChartSection
+          theme={theme}
+          title="Sales vs Margin by Dish"
+          subtitle="Operational profitability heatmap"
+        >
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={profitabilityData}>
@@ -608,25 +548,14 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </AnalyticsChartSection>
       </div>
 
-      <Card theme={theme} className="p-4">
-        <div className="mb-4">
-          <h3
-            className={`text-sm font-bold ${
-              isDark ? "text-slate-100" : "text-slate-900"
-            }`}
-          >
-            Productivity Lens
-          </h3>
-          <p
-            className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-          >
-            Distribution of waste and margin efficiency
-          </p>
-        </div>
-
+      <AnalyticsChartSection
+        theme={theme}
+        title="Productivity Lens"
+        subtitle="Distribution of waste and margin efficiency"
+      >
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart>
@@ -663,7 +592,7 @@ export const Dashboard = ({ theme = "light", companyName }: DashboardProps) => {
             </ScatterChart>
           </ResponsiveContainer>
         </div>
-      </Card>
+      </AnalyticsChartSection>
 
       <div className="text-xs text-slate-400">
         {companyName ? `Current outlet: ${companyName}` : "No outlet selected"}

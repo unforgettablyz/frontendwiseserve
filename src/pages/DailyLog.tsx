@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
+import { LogControls } from "../components/daily/LogControls";
+import { LogSummaryCards } from "../components/daily/LogSummaryCards";
+import { LogTable } from "../components/daily/LogTable";
+import { AddBatchModal } from "../components/daily/AddBatchModal";
 import { menuRepository } from "../repositories/menuRepository";
 import { recordRepository } from "../repositories/recordRepository";
 import { MenuItem } from "../models/Menu";
@@ -308,122 +311,25 @@ export const DailyLog: React.FC<DailyLogProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Overview Cards (Now at the top) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card theme={theme}>
-          <p
-            className={`text-xs font-semibold uppercase ${
-              isDark ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            {isBM ? "JUMLAH PREP" : "TOTAL PREPARED"}
-          </p>
-          <p
-            className={`text-2xl font-bold mt-1 ${
-              isDark ? "text-white" : "text-slate-800"
-            }`}
-          >
-            {totalPrepared}{" "}
-            <span className="text-xs font-normal text-slate-400">
-              {isBM ? "unit" : "units"}
-            </span>
-          </p>
-        </Card>
+      <LogSummaryCards
+        theme={theme}
+        language={language}
+        totalPrepared={totalPrepared}
+        totalSold={totalSold}
+        totalRecycle={totalRecycle}
+        totalWasteCost={totalWasteCost}
+      />
 
-        <Card theme={theme}>
-          <p
-            className={`text-xs font-semibold uppercase ${
-              isDark ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            {isBM ? "TERJUAL (POS)" : "TOTAL SOLD (POS)"}
-          </p>
-          <p className="text-2xl font-bold text-emerald-500 mt-1">
-            {totalSold}{" "}
-            <span className="text-xs font-normal text-slate-400">
-              {isBM ? "unit" : "units"}
-            </span>
-          </p>
-        </Card>
-
-        <Card theme={theme}>
-          <p
-            className={`text-xs font-semibold uppercase ${
-              isDark ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            {isBM ? "BAKI RECYCLE" : "RECYCLED STOCK"}
-          </p>
-          <p className="text-2xl font-bold text-amber-500 mt-1">
-            {totalRecycle}{" "}
-            <span className="text-xs font-normal text-slate-400">
-              {isBM ? "unit" : "units"}
-            </span>
-          </p>
-        </Card>
-
-        <Card theme={theme}>
-          <p className="text-xs font-semibold text-rose-500 uppercase">
-            {isBM ? "KOS SISA / BUANG" : "ESTIMATED WASTE COST"}
-          </p>
-          <p className="text-2xl font-bold text-rose-500 mt-1">
-            RM{totalWasteCost.toFixed(2)}
-          </p>
-        </Card>
-      </div>
-
-      {/* 2. Inline Action Controls Bar (Now below overview cards) */}
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="date"
-          value={shiftDate}
-          onChange={(e) => setShiftDate(e.target.value)}
-          className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 ${
-            isDark
-              ? "bg-slate-800 border-slate-700 text-slate-100"
-              : "bg-white border-slate-200 text-slate-700"
-          }`}
-        />
-
-        <select
-          value={shiftType}
-          onChange={(e) => setShiftType(e.target.value as any)}
-          className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 ${
-            isDark
-              ? "bg-slate-800 border-slate-700 text-slate-100"
-              : "bg-white border-slate-200 text-slate-700"
-          }`}
-        >
-          <option value="Lunch">
-            {isBM ? "Syif Tengah Hari" : "Lunch Shift"}
-          </option>
-          <option value="Dinner">{isBM ? "Syif Malam" : "Dinner Shift"}</option>
-          <option value="Full Day">
-            {isBM ? "Sepanjang Hari" : "Full Day"}
-          </option>
-        </select>
-
-        <Button
-          theme={theme}
-          variant="secondary"
-          onClick={() => setIsScanModalOpen(true)}
-          className="flex items-center gap-2 text-xs rounded-xl py-2 px-3"
-        >
-          <CameraIcon />
-          <span>
-            {isBM ? "Imbas Kitchen Prep Sheet" : "Scan Kitchen Prep Sheet"}
-          </span>
-        </Button>
-
-        <Button
-          theme={theme}
-          onClick={handleOpenAddModal}
-          className="flex items-center gap-2 text-xs rounded-xl py-2 px-3"
-        >
-          <PlusIcon />
-          <span>{isBM ? "Tambah Batch Manual" : "Add Batch Row"}</span>
-        </Button>
-      </div>
+      <LogControls
+        theme={theme}
+        language={language}
+        shiftDate={shiftDate}
+        shiftType={shiftType}
+        onShiftDateChange={setShiftDate}
+        onShiftTypeChange={setShiftType}
+        onScanClick={() => setIsScanModalOpen(true)}
+        onAddClick={handleOpenAddModal}
+      />
 
       {/* Feedback Banners */}
       {successMessage && (
@@ -449,395 +355,36 @@ export const DailyLog: React.FC<DailyLogProps> = ({
         </div>
       )}
 
-      {/* 3. Main Table Form */}
-      <form onSubmit={handleSubmitLog}>
-        <Card theme={theme} className="overflow-hidden min-h-[250px]">
-          <div
-            className={`p-4 border-b flex justify-between items-center ${
-              isDark ? "border-slate-800" : "border-slate-100"
-            }`}
-          >
-            <h3
-              className={`font-semibold text-sm ${
-                isDark ? "text-slate-100" : "text-slate-800"
-              }`}
-            >
-              {isBM ? "Senarai Batch Syif Dapur" : "Shift Kitchen Batch Entry"}{" "}
-              ({calculatedRows.length})
-            </h3>
-            <Button
-              type="button"
-              theme={theme}
-              variant="secondary"
-              size="sm"
-              onClick={handleOpenAddModal}
-              className="rounded-xl text-xs"
-            >
-              + {isBM ? "Tambah Batch Manual" : "Add Batch Row"}
-            </Button>
-          </div>
-
-          {calculatedRows.length === 0 ? (
-            <div className="p-12 text-center text-xs text-slate-400">
-              {isBM
-                ? "Tiada batch direkodkan lagi. Klik '+ Tambah Batch Manual' atau 'Imbas Kitchen Prep Sheet' untuk bermula."
-                : "No batches recorded yet. Click '+ Add Batch Row' or 'Scan Kitchen Prep Sheet' to start."}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead
-                  className={`font-semibold uppercase border-b ${
-                    isDark
-                      ? "bg-slate-800/60 text-slate-400 border-slate-800"
-                      : "bg-slate-50 text-slate-700 border-slate-100"
-                  }`}
-                >
-                  <tr>
-                    <th className="p-3">
-                      {isBM ? "BATCH & MASA" : "BATCH & TIME"}
-                    </th>
-                    <th className="p-3">{isBM ? "ITEM MENU" : "MENU ITEM"}</th>
-                    <th className="p-3 w-20">
-                      {isBM ? "PREP QTY" : "PREP QTY"}
-                    </th>
-                    <th className="p-3 w-20">
-                      {isBM ? "SOLD (POS)" : "SOLD (POS)"}
-                    </th>
-                    <th className="p-3 w-20">
-                      {isBM ? "VARIANS" : "VARIANCE"}
-                    </th>
-                    <th className="p-3 w-20 text-amber-500">
-                      {isBM ? "RECYCLE" : "RECYCLE"}
-                    </th>
-                    <th className="p-3 w-20 text-rose-500">
-                      {isBM ? "SISA/BUANG" : "WASTE QTY"}
-                    </th>
-                    <th className="p-3">
-                      {isBM ? "SEBAB SISA" : "WASTE REASON"}
-                    </th>
-                    <th className="p-3 w-10 text-center">
-                      {isBM ? "TINDAKAN" : "ACTION"}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody
-                  className={`divide-y ${
-                    isDark ? "divide-slate-800" : "divide-slate-100"
-                  }`}
-                >
-                  {calculatedRows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className={
-                        isDark
-                          ? "hover:bg-slate-800/40"
-                          : "hover:bg-slate-50/50"
-                      }
-                    >
-                      <td className="p-3 font-mono text-[11px]">
-                        <div className="font-bold text-slate-400">
-                          {row.batchId}
-                        </div>
-                        <Input
-                          theme={theme}
-                          type="time"
-                          value={row.prepTime}
-                          onChange={(e) =>
-                            handleRowChange(row.id, "prepTime", e.target.value)
-                          }
-                          className="mt-1 text-[10px] p-1 h-6"
-                        />
-                      </td>
-
-                      <td className="p-3">
-                        <select
-                          value={row.menuItemId}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "menuItemId",
-                              e.target.value,
-                            )
-                          }
-                          className={`w-full border rounded-xl p-1.5 text-xs focus:ring-1 ${
-                            isDark
-                              ? "bg-slate-800 border-slate-700 text-slate-100"
-                              : "bg-white border-slate-200 text-slate-800"
-                          }`}
-                        >
-                          {availableMenuItems.map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.name} ({item.category})
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-
-                      <td className="p-3">
-                        <Input
-                          theme={theme}
-                          type="number"
-                          min="0"
-                          value={row.preparedQty}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "preparedQty",
-                              parseInt(e.target.value) || 0,
-                            )
-                          }
-                        />
-                      </td>
-
-                      <td className="p-3 font-semibold text-emerald-500">
-                        {row.soldQty}
-                      </td>
-
-                      <td className="p-3 font-semibold text-slate-400">
-                        {row.totalRemaining}
-                      </td>
-
-                      <td className="p-3">
-                        <Input
-                          theme={theme}
-                          type="number"
-                          min="0"
-                          value={row.recycleQty}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "recycleQty",
-                              parseInt(e.target.value) || 0,
-                            )
-                          }
-                        />
-                      </td>
-
-                      <td className="p-3">
-                        <Input
-                          theme={theme}
-                          type="number"
-                          min="0"
-                          value={row.wasteQty}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "wasteQty",
-                              parseInt(e.target.value) || 0,
-                            )
-                          }
-                        />
-                      </td>
-
-                      <td className="p-3">
-                        <select
-                          value={row.wasteReason}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "wasteReason",
-                              e.target.value,
-                            )
-                          }
-                          className={`w-full border rounded-xl p-1.5 text-xs focus:ring-1 ${
-                            isDark
-                              ? "bg-slate-800 border-slate-700 text-slate-100"
-                              : "bg-white border-slate-200 text-slate-800"
-                          }`}
-                        >
-                          {WASTE_REASONS.map((reason) => (
-                            <option key={reason} value={reason}>
-                              {reason}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-
-                      <td className="p-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveRow(row.id)}
-                          className="text-slate-400 hover:text-rose-500 font-bold p-1"
-                          title={isBM ? "Buang baris" : "Remove row"}
-                        >
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div
-            className={`p-4 border-t flex justify-between items-center ${
-              isDark
-                ? "bg-slate-900/50 border-slate-800 text-slate-400"
-                : "bg-slate-50 border-slate-100 text-slate-500"
-            }`}
-          >
-            <span className="text-xs">
-              {isBM
-                ? "Varians & baki recycle akan dihantar secara automatik ke Expiration Alert."
-                : "Variances and recycled stocks will be automatically routed to Expiration Alert."}
-            </span>
-            <Button
-              type="submit"
-              theme={theme}
-              variant="primary"
-              disabled={isSubmitting || calculatedRows.length === 0}
-            >
-              {isSubmitting
-                ? isBM
-                  ? "Menghantar..."
-                  : "Submitting..."
-                : isBM
-                  ? "Simpan Rekod Log Syif"
-                  : "Save Shift Log Records"}
-            </Button>
-          </div>
-        </Card>
-      </form>
-
-      {/* Modal Manual Add Batch Row */}
-      <Modal
+      <LogTable
         theme={theme}
+        language={language}
+        rows={calculatedRows}
+        availableMenuItems={availableMenuItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          costToProduce: item.costToProduce,
+          soldQty: item.soldQty,
+        }))}
+        wasteReasons={WASTE_REASONS}
+        onRowChange={handleRowChange}
+        onRemoveRow={handleRemoveRow}
+        onAddClick={handleOpenAddModal}
+        onSubmit={handleSubmitLog}
+        isSubmitting={isSubmitting}
+      />
+
+      <AddBatchModal
+        theme={theme}
+        language={language}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title={isBM ? "Tambah Batch Masakan Dapur" : "Add Kitchen Prep Batch"}
-      >
-        <form onSubmit={handleManualAddBatch} className="space-y-3 text-xs">
-          <div>
-            <label
-              className={`block mb-1 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}
-            >
-              {isBM ? "Pilih Item Menu" : "Select Menu Item"}
-            </label>
-            <select
-              value={newBatchForm.menuItemId}
-              onChange={(e) =>
-                setNewBatchForm({
-                  ...newBatchForm,
-                  menuItemId: Number(e.target.value),
-                })
-              }
-              className={`w-full border rounded-xl p-2 text-xs ${
-                isDark
-                  ? "bg-slate-800 border-slate-700 text-slate-100"
-                  : "bg-white border-slate-200 text-slate-800"
-              }`}
-              required
-            >
-              {availableMenuItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} ({item.category})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              theme={theme}
-              label={isBM ? "Masa Prep Dapur" : "Kitchen Prep Time"}
-              type="time"
-              value={newBatchForm.prepTime}
-              onChange={(e) =>
-                setNewBatchForm({ ...newBatchForm, prepTime: e.target.value })
-              }
-              required
-            />
-            <Input
-              theme={theme}
-              label={isBM ? "Kuantiti Masak (Prep Qty)" : "Prep Quantity"}
-              type="number"
-              min="1"
-              value={newBatchForm.preparedQty}
-              onChange={(e) =>
-                setNewBatchForm({
-                  ...newBatchForm,
-                  preparedQty: Number(e.target.value),
-                })
-              }
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              theme={theme}
-              label={isBM ? "Kuantiti Recycle (Baki Elok)" : "Recycle Qty"}
-              type="number"
-              min="0"
-              value={newBatchForm.recycleQty}
-              onChange={(e) =>
-                setNewBatchForm({
-                  ...newBatchForm,
-                  recycleQty: Number(e.target.value),
-                })
-              }
-            />
-            <Input
-              theme={theme}
-              label={isBM ? "Kuantiti Sisa (Buang)" : "Waste Quantity"}
-              type="number"
-              min="0"
-              value={newBatchForm.wasteQty}
-              onChange={(e) =>
-                setNewBatchForm({
-                  ...newBatchForm,
-                  wasteQty: Number(e.target.value),
-                })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              className={`block mb-1 font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}
-            >
-              {isBM ? "Sebab Sisa / Kerosakan" : "Waste Reason"}
-            </label>
-            <select
-              value={newBatchForm.wasteReason}
-              onChange={(e) =>
-                setNewBatchForm({
-                  ...newBatchForm,
-                  wasteReason: e.target.value,
-                })
-              }
-              className={`w-full border rounded-xl p-2 text-xs ${
-                isDark
-                  ? "bg-slate-800 border-slate-700 text-slate-100"
-                  : "bg-white border-slate-200 text-slate-800"
-              }`}
-            >
-              {WASTE_REASONS.map((reason) => (
-                <option key={reason} value={reason}>
-                  {reason}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3">
-            <Button
-              theme={theme}
-              variant="secondary"
-              type="button"
-              onClick={() => setIsAddModalOpen(false)}
-              className="rounded-xl text-xs"
-            >
-              {isBM ? "Batal" : "Cancel"}
-            </Button>
-            <Button theme={theme} type="submit" className="rounded-xl text-xs">
-              {isBM ? "Tambah Batch" : "Add Batch"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+        availableMenuItems={availableMenuItems}
+        newBatchForm={newBatchForm}
+        wasteReasons={WASTE_REASONS}
+        onFormChange={setNewBatchForm}
+        onSubmit={handleManualAddBatch}
+      />
 
       {/* Modal OCR Kitchen Prep Sheet Scanner */}
       <Modal

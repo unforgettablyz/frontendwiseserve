@@ -1,6 +1,7 @@
 export type CategoryType = "Mains" | "Appetizers" | "Dessert" | "Beverages";
 
 export interface MenuItem {
+  price: any;
   id: number;
   name: string;
   category: CategoryType;

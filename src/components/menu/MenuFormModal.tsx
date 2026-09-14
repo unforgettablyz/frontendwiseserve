@@ -19,7 +19,6 @@ const CATEGORIES: CategoryType[] = [
   "Appetizers",
   "Dessert",
   "Beverages",
-  "Sides",
 ];
 
 export const MenuFormModal: React.FC<MenuFormModalProps> = ({
@@ -39,8 +38,8 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
     if (initialData) {
       setName(initialData.name);
       setCategory(initialData.category);
-      setPrice(initialData.price.toString());
-      setCostToProduce(initialData.costToProduce.toString());
+      setPrice(initialData.sellingPrice.toString());
+      setCostToProduce(initialData.costToProduce?.toString() ?? "");
     } else {
       setName("");
       setCategory("Mains");
@@ -57,7 +56,7 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
       id: initialData ? initialData.id : undefined,
       name: name.trim(),
       category,
-      price: parseFloat(price),
+      sellingPrice: parseFloat(price),
       costToProduce: parseFloat(costToProduce),
       isActive: true,
     });
