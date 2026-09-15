@@ -3,6 +3,9 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
+import { CampaignCard } from "../components/info/CampaignCard";
+import { ExpirationCard } from "../components/info/ExpirationCard";
+import { ImpactSection } from "../components/info/ImpactSection";
 
 type Theme = "light" | "dark";
 type Language = "en" | "bm";
@@ -254,46 +257,32 @@ export const AboutUs = ({
         ))}
       </div>
 
-      <Card
+      <ImpactSection
         theme={theme}
-        className="grid grid-cols-1 gap-6 md:grid-cols-[1.2fr_0.8fr] md:items-center"
-      >
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
-            {isBM ? "Kesan kami" : "Our impact"}
-          </p>
-          <h3
-            className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}
-          >
-            {isBM
-              ? "Jadikan kelestarian boleh diukur."
-              : "Make sustainability measurable."}
-          </h3>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            {isBM
-              ? "Dari dapur hingga laporan pengurusan, WiseServe menghubungkan tindakan harian dengan hasil kewangan dan alam sekitar."
-              : "From the kitchen floor to the management report, WiseServe connects daily actions with financial and environmental outcomes."}
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div
-            className={`rounded-2xl p-4 ${isDark ? "bg-slate-800" : "bg-slate-50"}`}
-          >
-            <p className="text-2xl font-bold text-blue-500">24/7</p>
-            <p className="mt-1 text-xs text-slate-400">
-              {isBM ? "Keterlihatan operasi" : "Operational visibility"}
-            </p>
-          </div>
-          <div
-            className={`rounded-2xl p-4 ${isDark ? "bg-slate-800" : "bg-slate-50"}`}
-          >
-            <p className="text-2xl font-bold text-emerald-500">1 view</p>
-            <p className="mt-1 text-xs text-slate-400">
-              {isBM ? "Untuk seluruh pasukan" : "For the whole team"}
-            </p>
-          </div>
-        </div>
-      </Card>
+        eyebrow={isBM ? "Kesan kami" : "Our impact"}
+        title={
+          isBM
+            ? "Jadikan kelestarian boleh diukur."
+            : "Make sustainability measurable."
+        }
+        description={
+          isBM
+            ? "Dari dapur hingga laporan pengurusan, WiseServe menghubungkan tindakan harian dengan hasil kewangan dan alam sekitar."
+            : "From the kitchen floor to the management report, WiseServe connects daily actions with financial and environmental outcomes."
+        }
+        items={[
+          {
+            value: "24/7",
+            label: isBM ? "Keterlihatan operasi" : "Operational visibility",
+            tone: "blue",
+          },
+          {
+            value: "1 view",
+            label: isBM ? "Untuk seluruh pasukan" : "For the whole team",
+            tone: "emerald",
+          },
+        ]}
+      />
 
       <ContactUs theme={theme} language={language} />
     </div>
@@ -450,71 +439,18 @@ export const Promotions = ({
 
       <div className="grid gap-4">
         {campaigns.map((campaign) => (
-          <Card
+          <CampaignCard
             key={campaign.title}
             theme={theme}
-            className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between"
-          >
-            <div>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border ${isDark ? "border-slate-700 bg-slate-800 text-blue-300" : "border-slate-200 bg-slate-50 text-blue-600"}`}
-                >
-                  <TagIcon className="h-5 w-5" />
-                </span>
-                <div>
-                  <h3
-                    className={`text-xl font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}
-                  >
-                    {campaign.title}
-                  </h3>
-                  <p
-                    className={`mt-1 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}
-                  >
-                    {campaign.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${isDark ? "bg-amber-500/15 text-amber-300" : "bg-amber-100 text-amber-700"}`}
-                >
-                  {campaign.discount}
-                </span>
-                <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${isDark ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-700"}`}
-                >
-                  {campaign.category}
-                </span>
-                <span
-                  className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-                >
-                  {campaign.period}
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-medium ${
-                campaign.active
-                  ? isDark
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : isDark
-                    ? "border-slate-700 bg-slate-800 text-slate-300"
-                    : "border-slate-200 bg-slate-100 text-slate-600"
-              }`}
-            >
-              {campaign.active
-                ? isBM
-                  ? "Aktif"
-                  : "Active"
-                : isBM
-                  ? "Tidak aktif"
-                  : "Inactive"}
-            </div>
-          </Card>
+            title={campaign.title}
+            description={campaign.description}
+            discount={campaign.discount}
+            category={campaign.category}
+            period={campaign.period}
+            active={campaign.active}
+            activeLabel={isBM ? "Aktif" : "Active"}
+            inactiveLabel={isBM ? "Tidak aktif" : "Inactive"}
+          />
         ))}
       </div>
 
@@ -816,42 +752,16 @@ export const ExpirationAlerts = ({
 
       <div className="grid gap-4">
         {alerts.map((alert) => (
-          <Card
+          <ExpirationCard
             key={alert.name}
             theme={theme}
-            className="flex items-center justify-between gap-4 p-4"
-          >
-            <div className="flex items-center gap-4">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full ${isDark ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-700"}`}
-              >
-                ⏰
-              </div>
-              <div>
-                <h3
-                  className={`text-lg font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}
-                >
-                  {alert.name}
-                </h3>
-                <p
-                  className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-                >
-                  {isBM ? "Disediakan" : "Prepared"} {alert.preparedAt}
-                </p>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p
-                className={`text-xl font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}
-              >
-                {alert.amount}
-              </p>
-              <p className="text-xs text-amber-500">
-                {isBM ? "Tamat tempoh dalam" : "Expires in"} {alert.expiresIn}
-              </p>
-            </div>
-          </Card>
+            name={alert.name}
+            amount={alert.amount}
+            expiresIn={alert.expiresIn}
+            preparedAt={alert.preparedAt}
+            preparedLabel={isBM ? "Disediakan" : "Prepared"}
+            expiresLabel={isBM ? "Tamat tempoh dalam" : "Expires in"}
+          />
         ))}
       </div>
     </div>

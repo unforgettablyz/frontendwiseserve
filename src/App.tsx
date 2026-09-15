@@ -40,15 +40,6 @@ type Tab =
   | "promotions"
   | "expiration";
 
-interface Translations {
-  pageTitles: Record<Tab, string>;
-  sidebar: Record<Tab, string>;
-  header: {
-    operations: string;
-    user: string;
-  };
-}
-
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const rememberMeEnabled =
@@ -59,9 +50,6 @@ export default function App() {
       window.localStorage.getItem("wiseserve-authenticated") === "true"
     );
   });
-  const [rememberMe, setRememberMe] = useState(
-    () => window.localStorage.getItem("wiseserve-remember-me") === "true",
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(() => {
     const rememberMeEnabled =
@@ -98,8 +86,6 @@ export default function App() {
     setSelectedCompany(companyName);
     setIsAuthenticated(true);
     setIsLoading(true);
-    setRememberMe(rememberMeValue);
-
     if (rememberMeValue) {
       window.localStorage.setItem("wiseserve-authenticated", "true");
       window.localStorage.setItem("wiseserve-outlet", companyName);
@@ -119,7 +105,6 @@ export default function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setIsLoading(false);
-    setRememberMe(false);
     window.localStorage.removeItem("wiseserve-authenticated");
     window.localStorage.removeItem("wiseserve-outlet");
     window.localStorage.removeItem("wiseserve-remember-me");

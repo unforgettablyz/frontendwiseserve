@@ -1,30 +1,26 @@
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
-
-interface ScannedItem {
-  menuItemId?: number;
-  itemName: string;
-  preparedQty: number;
-  soldQty: number;
-  wasteReason: string;
-}
+import type { ScannedRecordItem } from "../../repositories/recordRepository";
 
 interface PrepSheetScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (scannedData: ScannedItem[]) => void;
+  onScan: (file: File) => Promise<ScannedRecordItem[]>;
+  onImport: (scannedData: ScannedRecordItem[]) => void;
 }
 
 export const PrepSheetScannerModal: React.FC<PrepSheetScannerModalProps> = ({
   isOpen,
   onClose,
+  onScan,
   onImport,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [scannedResults, setScannedResults] = useState<ScannedItem[]>([]);
+  const [scannedResults, setScannedResults] = useState<ScannedRecordItem[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -34,38 +30,23 @@ export const PrepSheetScannerModal: React.FC<PrepSheetScannerModalProps> = ({
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       setScannedResults([]);
+      setErrorMessage(null);
     }
   };
 
-  const handleScanImage = () => {
+  const handleScanImage = async () => {
     if (!selectedFile) return;
     setIsScanning(true);
-
-    setTimeout(() => {
-      const mockParsedItems: ScannedItem[] = [
-        {
-          itemName: "Grilled Chicken Burger",
-          preparedQty: 25,
-          soldQty: 22,
-          wasteReason: "Unsold End of Shift",
-        },
-        {
-          itemName: "Truffle Fries",
-          preparedQty: 40,
-          soldQty: 38,
-          wasteReason: "Quality Control Drop",
-        },
-        {
-          itemName: "Iced Matcha Latte",
-          preparedQty: 15,
-          soldQty: 12,
-          wasteReason: "Customer Return / Wrong Order",
-        },
-      ];
-
-      setScannedResults(mockParsedItems);
+    setErrorMessage(null);
+    try {
+      setScannedResults(await onScan(selectedFile));
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to scan the file.",
+      );
+    } finally {
       setIsScanning(false);
-    }, 1500);
+    }
   };
 
   const handleConfirmImport = () => {
@@ -120,6 +101,10 @@ export const PrepSheetScannerModal: React.FC<PrepSheetScannerModalProps> = ({
           >
             {isScanning ? "Processing OCR Image..." : "Scan & Extract Data"}
           </Button>
+        )}
+
+        {errorMessage && (
+          <p className="text-xs text-rose-500">{errorMessage}</p>
         )}
 
         {scannedResults.length > 0 && (

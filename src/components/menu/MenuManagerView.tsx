@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Input } from "../ui/Input";
-import { Modal } from "../ui/Modal";
-import { type CategoryType, type MenuItem } from "../../models/Menu";
+import { MenuFormModal } from "./MenuFormModal";
+import { MenuScannerModal } from "./MenuScannerModal";
+import { type MenuItem } from "../../models/Menu";
 
 export interface MenuCategory {
   code: string;
@@ -13,33 +15,33 @@ export interface MenuCategory {
 export interface MenuManagerViewProps {
   theme?: "light" | "dark";
   language?: "en" | "bm";
-  menuItems: MenuItem[];
   filteredItems: MenuItem[];
   categories: MenuCategory[];
   searchTerm: string;
   selectedCategory: string;
   isLoading: boolean;
   error: string | null;
-  isReceiptModalOpen: boolean;
+  isMenuScannerOpen: boolean;
   isEditModalOpen: boolean;
   isAddModalOpen: boolean;
   onEditModalOpenChange: (open: boolean) => void;
   editingItem: MenuItem | null;
-  newItem: Partial<MenuItem>;
-  scanFile: File | null;
-  isScanning: boolean;
   onSearchChange: (value: string) => void;
   onCategoryChange: (category: string) => void;
   onFetchMenu: () => void;
-  onReceiptModalOpenChange: (open: boolean) => void;
-  onFileChange: (file: File | null) => void;
-  onScanReceipt: () => void;
+  onMenuScannerOpenChange: (open: boolean) => void;
+  onScanMenu: (
+    file: File,
+  ) => Promise<import("../../models/Menu").ScannedMenuItem[]>;
+  onImportMenuItems: (
+    items: import("../../models/Menu").ScannedMenuItem[],
+  ) => void | Promise<void>;
   onOpenEdit: (item: MenuItem) => void;
-  onSaveEdit: (e: React.FormEvent) => void;
-  onAddNewItem: (e: React.FormEvent) => void;
+  onSaveItem: (itemData: Partial<MenuItem>) => void;
+  onCreateItem: (itemData: Partial<MenuItem>) => void;
   onAddModalOpenChange: (open: boolean) => void;
-  onEditingItemChange: (item: MenuItem) => void;
-  onNewItemChange: (nextItem: Partial<MenuItem>) => void;
+  onUpdateItems: (items: MenuItem[]) => Promise<void>;
+  onDeleteItem: (id: number) => Promise<void>;
 }
 
 const CameraIcon = () => (
@@ -115,36 +117,90 @@ const AlertIcon = () => (
 export const MenuManagerView: React.FC<MenuManagerViewProps> = ({
   theme = "light",
   language = "en",
-  menuItems,
   filteredItems,
   categories,
   searchTerm,
   selectedCategory,
   isLoading,
   error,
-  isReceiptModalOpen,
+  isMenuScannerOpen,
   isEditModalOpen,
   isAddModalOpen,
   editingItem,
-  newItem,
-  scanFile,
-  isScanning,
   onSearchChange,
   onCategoryChange,
   onFetchMenu,
-  onReceiptModalOpenChange,
+  onMenuScannerOpenChange,
   onEditModalOpenChange,
-  onFileChange,
-  onScanReceipt,
+  onScanMenu,
+  onImportMenuItems,
   onOpenEdit,
-  onSaveEdit,
-  onAddNewItem,
+  onSaveItem,
+  onCreateItem,
   onAddModalOpenChange,
-  onEditingItemChange,
-  onNewItemChange,
+  onUpdateItems,
+  onDeleteItem,
 }) => {
   const isDark = theme === "dark";
   const isBM = language === "bm";
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftItems, setDraftItems] = useState<MenuItem[]>(filteredItems);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleEditToggle = () => {
+    if (isEditing) return;
+    setDraftItems(filteredItems.map((item) => ({ ...item })));
+    setIsEditing(true);
+  };
+
+  const handleDraftChange = (
+    id: number,
+    field:
+      | "name"
+      | "category"
+      | "sellingPrice"
+      | "costToProduce"
+      | "shelfLifeHours",
+    value: string,
+  ) => {
+    setDraftItems((items) =>
+      items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]:
+                field === "sellingPrice" ||
+                field === "costToProduce" ||
+                field === "shelfLifeHours"
+                  ? Number(value) || 0
+                  : value,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleSaveTable = async () => {
+    setIsSaving(true);
+    try {
+      await onUpdateItems(draftItems);
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm(
+      isBM
+        ? "Padam item menu ini? Tindakan ini tidak boleh dibuat asal."
+        : "Delete this menu item? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    await onDeleteItem(id);
+    setDraftItems((items) => items.filter((item) => item.id !== id));
+  };
 
   return (
     <div className="space-y-6">
@@ -152,11 +208,37 @@ export const MenuManagerView: React.FC<MenuManagerViewProps> = ({
         <Button
           theme={theme}
           variant="secondary"
-          onClick={() => onReceiptModalOpenChange(true)}
+          onClick={isEditing ? handleSaveTable : handleEditToggle}
+          disabled={isSaving}
+          className="flex items-center gap-2 text-xs rounded-xl py-2 px-3"
+        >
+          {isEditing ? (
+            <Check className="h-4 w-4" />
+          ) : (
+            <Pencil className="h-4 w-4" />
+          )}
+          <span>
+            {isSaving
+              ? isBM
+                ? "Menyimpan..."
+                : "Saving..."
+              : isEditing
+                ? isBM
+                  ? "Selesai"
+                  : "Save / Done"
+                : isBM
+                  ? "Edit Jadual"
+                  : "Edit Table"}
+          </span>
+        </Button>
+        <Button
+          theme={theme}
+          variant="secondary"
+          onClick={() => onMenuScannerOpenChange(true)}
           className="flex items-center gap-2 text-xs rounded-xl py-2 px-3"
         >
           <CameraIcon />
-          <span>{isBM ? "Imbas Resit Jualan" : "Scan Sales Receipt"}</span>
+          <span>{isBM ? "Imbas Menu" : "Scan Menu"}</span>
         </Button>
 
         <Button
@@ -260,7 +342,7 @@ export const MenuManagerView: React.FC<MenuManagerViewProps> = ({
                     {isBM ? "KOS PENYEDIAAN" : "PREP COST"}
                   </th>
                   <th className="p-4 text-center">
-                    {isBM ? "TERJUAL HARIAN" : "DAILY SOLD QTY"}
+                    {isBM ? "JANGKA HAYAT (JAM)" : "SHELF LIFE (HOURS)"}
                   </th>
                   <th className="p-4 text-center">
                     {isBM ? "TINDAKAN" : "ACTIONS"}
@@ -272,7 +354,7 @@ export const MenuManagerView: React.FC<MenuManagerViewProps> = ({
                   isDark ? "divide-slate-800" : "divide-slate-100"
                 }`}
               >
-                {filteredItems.map((item) => (
+                {(isEditing ? draftItems : filteredItems).map((item) => (
                   <tr
                     key={item.id}
                     className={
@@ -284,42 +366,138 @@ export const MenuManagerView: React.FC<MenuManagerViewProps> = ({
                         isDark ? "text-slate-100" : "text-slate-800"
                       }`}
                     >
-                      {item.name}
+                      {isEditing ? (
+                        <Input
+                          theme={theme}
+                          value={item.name}
+                          onChange={(event) =>
+                            handleDraftChange(
+                              item.id,
+                              "name",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      ) : (
+                        item.name
+                      )}
                     </td>
                     <td
                       className={`p-4 ${
                         isDark ? "text-slate-400" : "text-slate-500"
                       }`}
                     >
-                      {item.category}
+                      {isEditing ? (
+                        <select
+                          value={item.category}
+                          onChange={(event) =>
+                            handleDraftChange(
+                              item.id,
+                              "category",
+                              event.target.value,
+                            )
+                          }
+                          className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs"
+                        >
+                          {categories
+                            .filter((category) => category.code !== "All")
+                            .map((category) => (
+                              <option key={category.code} value={category.code}>
+                                {category.label}
+                              </option>
+                            ))}
+                        </select>
+                      ) : (
+                        item.category
+                      )}
                     </td>
                     <td
                       className={`p-4 font-medium ${
                         isDark ? "text-slate-200" : "text-slate-700"
                       }`}
                     >
-                      RM{(item.sellingPrice || 0).toFixed(2)}
+                      {isEditing ? (
+                        <Input
+                          theme={theme}
+                          type="number"
+                          step="0.01"
+                          value={item.sellingPrice || 0}
+                          onChange={(event) =>
+                            handleDraftChange(
+                              item.id,
+                              "sellingPrice",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      ) : (
+                        `RM${(item.sellingPrice || 0).toFixed(2)}`
+                      )}
                     </td>
                     <td
                       className={`p-4 ${
                         isDark ? "text-slate-400" : "text-slate-500"
                       }`}
                     >
-                      RM{(item.costToProduce || 0).toFixed(2)}
+                      {isEditing ? (
+                        <Input
+                          theme={theme}
+                          type="number"
+                          step="0.01"
+                          value={item.costToProduce || 0}
+                          onChange={(event) =>
+                            handleDraftChange(
+                              item.id,
+                              "costToProduce",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      ) : (
+                        `RM${(item.costToProduce || 0).toFixed(2)}`
+                      )}
                     </td>
                     <td className="p-4 text-center font-bold text-emerald-500">
-                      {item.soldQty} {isBM ? "unit" : "units"}
+                      {isEditing ? (
+                        <Input
+                          theme={theme}
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={item.shelfLifeHours}
+                          onChange={(event) =>
+                            handleDraftChange(
+                              item.id,
+                              "shelfLifeHours",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      ) : (
+                        `${item.shelfLifeHours} hrs`
+                      )}
                     </td>
                     <td className="p-4 text-center">
-                      <Button
-                        theme={theme}
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => onOpenEdit(item)}
-                        className="rounded-xl text-[11px]"
-                      >
-                        {isBM ? "Edit" : "Edit"}
-                      </Button>
+                      {isEditing ? (
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete(item.id)}
+                          className="inline-flex items-center justify-center rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                          title={isBM ? "Padam item" : "Delete item"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <Button
+                          theme={theme}
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => onOpenEdit(item)}
+                          className="rounded-xl text-[11px]"
+                        >
+                          {isBM ? "Edit" : "Edit"}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -329,199 +507,31 @@ export const MenuManagerView: React.FC<MenuManagerViewProps> = ({
         )}
       </Card>
 
-      <Modal
+      <MenuScannerModal
         theme={theme}
-        isOpen={isReceiptModalOpen}
-        onClose={() => onReceiptModalOpenChange(false)}
-        title={isBM ? "Imbas Resit Jualan Harian" : "Scan Daily Sales Receipt"}
-      >
-        <div className="space-y-4">
-          <p
-            className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-          >
-            {isBM
-              ? "Muat naik imej atau video resit jualan harian POS untuk mengekstrak dan mengemas kini metrik jualan item secara automatik."
-              : "Upload the daily POS sales receipt image or video to automatically extract and update item sales metrics."}
-          </p>
-          <input
-            type="file"
-            accept="image/*,video/*,.mp4,.mov,.webm"
-            onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
-            className={`block w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 ${
-              isDark
-                ? "text-slate-300 file:bg-slate-800 file:text-slate-200"
-                : "text-slate-500 file:bg-slate-100 file:text-slate-700"
-            }`}
-          />
-          {scanFile && (
-            <Button
-              theme={theme}
-              onClick={onScanReceipt}
-              disabled={isScanning}
-              className="w-full rounded-xl text-xs"
-            >
-              {isScanning
-                ? isBM
-                  ? "Menganalisis Resit Jualan..."
-                  : "Processing Sales Receipt..."
-                : isBM
-                  ? "Ekstrak Data Jualan"
-                  : "Extract Sales Data"}
-            </Button>
-          )}
-        </div>
-      </Modal>
+        isOpen={isMenuScannerOpen}
+        onClose={() => onMenuScannerOpenChange(false)}
+        onScanMenu={onScanMenu}
+        onImportItems={onImportMenuItems}
+      />
 
-      {editingItem && (
-        <Modal
-          theme={theme}
-          isOpen={isEditModalOpen}
-          onClose={() => onEditModalOpenChange(false)}
-          title={`${isBM ? "Edit" : "Edit"} ${editingItem.name}`}
-        >
-          <form onSubmit={onSaveEdit} className="space-y-3 text-xs">
-            <Input
-              theme={theme}
-              label={isBM ? "Nama Hidangan" : "Dish Name"}
-              value={editingItem.name}
-              onChange={(e) =>
-                onEditingItemChange({ ...editingItem, name: e.target.value })
-              }
-            />
-            <Input
-              theme={theme}
-              label={isBM ? "Kategori" : "Category"}
-              value={editingItem.category}
-              onChange={(e) =>
-                onEditingItemChange({
-                  ...editingItem,
-                  category: e.target.value as CategoryType,
-                })
-              }
-            />
-            <Input
-              theme={theme}
-              label={isBM ? "Harga Jualan (RM)" : "Selling Price (RM)"}
-              type="number"
-              step="0.01"
-              value={editingItem.sellingPrice || 0}
-              onChange={(e) =>
-                onEditingItemChange({
-                  ...editingItem,
-                  sellingPrice: parseFloat(e.target.value) || 0,
-                })
-              }
-            />
-            <Input
-              theme={theme}
-              label={isBM ? "Kos Penyediaan (RM)" : "Prep Cost (RM)"}
-              type="number"
-              step="0.01"
-              value={editingItem.costToProduce || 0}
-              onChange={(e) =>
-                onEditingItemChange({
-                  ...editingItem,
-                  costToProduce: parseFloat(e.target.value) || 0,
-                })
-              }
-            />
+      <MenuFormModal
+        key={`edit-${editingItem?.id ?? "none"}-${isEditModalOpen}`}
+        theme={theme}
+        isOpen={isEditModalOpen}
+        onClose={() => onEditModalOpenChange(false)}
+        onSave={onSaveItem}
+        initialData={editingItem}
+      />
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                theme={theme}
-                variant="secondary"
-                type="button"
-                onClick={() => onEditModalOpenChange(false)}
-                className="rounded-xl text-xs"
-              >
-                {isBM ? "Batal" : "Cancel"}
-              </Button>
-              <Button
-                theme={theme}
-                type="submit"
-                className="rounded-xl text-xs"
-              >
-                {isBM ? "Simpan Perubahan" : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      <Modal
+      <MenuFormModal
+        key={`add-${isAddModalOpen}`}
         theme={theme}
         isOpen={isAddModalOpen}
         onClose={() => onAddModalOpenChange(false)}
-        title={isBM ? "Tambah Item Menu Baru" : "Add New Menu Item"}
-      >
-        <form onSubmit={onAddNewItem} className="space-y-3 text-xs">
-          <Input
-            theme={theme}
-            label={isBM ? "Nama Hidangan" : "Dish Name"}
-            placeholder="e.g. Chicken Burger"
-            value={newItem.name || ""}
-            onChange={(e) =>
-              onNewItemChange({ ...newItem, name: e.target.value })
-            }
-            required
-          />
-          <Input
-            theme={theme}
-            label={isBM ? "Kategori" : "Category"}
-            placeholder="Mains, Appetizers, Dessert, Beverages"
-            value={newItem.category || "Mains"}
-            onChange={(e) =>
-              onNewItemChange({
-                ...newItem,
-                category: e.target.value as CategoryType,
-              })
-            }
-          />
-          <Input
-            theme={theme}
-            label={isBM ? "Harga Jualan (RM)" : "Selling Price (RM)"}
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            value={newItem.sellingPrice || ""}
-            onChange={(e) =>
-              onNewItemChange({
-                ...newItem,
-                sellingPrice: parseFloat(e.target.value) || 0,
-              })
-            }
-          />
-          <Input
-            theme={theme}
-            label={isBM ? "Kos Penyediaan (RM)" : "Prep Cost (RM)"}
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            value={newItem.costToProduce || ""}
-            onChange={(e) =>
-              onNewItemChange({
-                ...newItem,
-                costToProduce: parseFloat(e.target.value) || 0,
-              })
-            }
-          />
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              theme={theme}
-              variant="secondary"
-              type="button"
-              onClick={() => onAddModalOpenChange(false)}
-              className="rounded-xl text-xs"
-            >
-              {isBM ? "Batal" : "Cancel"}
-            </Button>
-            <Button theme={theme} type="submit" className="rounded-xl text-xs">
-              {isBM ? "Tambah Item" : "Add Item"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+        onSave={onCreateItem}
+        initialData={null}
+      />
     </div>
   );
 };

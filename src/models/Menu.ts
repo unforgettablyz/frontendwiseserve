@@ -7,7 +7,7 @@ export interface MenuItem {
   category: CategoryType;
   sellingPrice: number;
   costToProduce?: number;
-  soldQty?: number;
+  shelfLifeHours: number;
   isActive: boolean;
 }
 
@@ -17,5 +17,6 @@ export interface ScannedMenuItem {
   category: CategoryType;
   price: number;
   costToProduce: number;
+  shelfLifeHours: number;
   confidenceScore?: number; // Optional AI extraction certainty (0-1)
 }

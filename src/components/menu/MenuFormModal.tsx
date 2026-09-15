@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -9,7 +9,7 @@ type Theme = "light" | "dark";
 interface MenuFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (itemData: Partial<MenuItem>) => void;
+  onSave: (itemData: Partial<MenuItem>) => void | Promise<void>;
   initialData?: MenuItem | null;
   theme?: Theme;
 }
@@ -29,35 +29,31 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
   theme = "light",
 }) => {
   const isDark = theme === "dark";
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<CategoryType>("Mains");
-  const [price, setPrice] = useState("");
-  const [costToProduce, setCostToProduce] = useState("");
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [category, setCategory] = useState<CategoryType>(
+    initialData?.category ?? "Mains",
+  );
+  const [price, setPrice] = useState(
+    initialData?.sellingPrice?.toString() ?? "",
+  );
+  const [costToProduce, setCostToProduce] = useState(
+    initialData?.costToProduce?.toString() ?? "",
+  );
+  const [shelfLifeHours, setShelfLifeHours] = useState(
+    initialData?.shelfLifeHours?.toString() ?? "",
+  );
 
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setCategory(initialData.category);
-      setPrice(initialData.sellingPrice.toString());
-      setCostToProduce(initialData.costToProduce?.toString() ?? "");
-    } else {
-      setName("");
-      setCategory("Mains");
-      setPrice("");
-      setCostToProduce("");
-    }
-  }, [initialData, isOpen]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !price || !costToProduce) return;
+    if (!name.trim() || !price || !costToProduce || !shelfLifeHours) return;
 
-    onSave({
+    await onSave({
       id: initialData ? initialData.id : undefined,
       name: name.trim(),
       category,
       sellingPrice: parseFloat(price),
       costToProduce: parseFloat(costToProduce),
+      shelfLifeHours: parseFloat(shelfLifeHours),
       isActive: true,
     });
 
@@ -153,6 +149,18 @@ export const MenuFormModal: React.FC<MenuFormModalProps> = ({
             />
           </div>
         </div>
+
+        <Input
+          theme={theme}
+          label="Shelf Life (in hours)"
+          type="number"
+          min="1"
+          step="1"
+          value={shelfLifeHours}
+          onChange={(e) => setShelfLifeHours(e.target.value)}
+          placeholder="e.g. 24"
+          required
+        />
 
         <div
           className={`flex justify-end space-x-3 pt-3 border-t ${

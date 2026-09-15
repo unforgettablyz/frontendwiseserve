@@ -4,6 +4,7 @@ interface ImpactSectionProps {
   theme?: "light" | "dark";
   title: string;
   description: string;
+  eyebrow?: string;
   items: Array<{
     label: string;
     value: string;
@@ -15,6 +16,7 @@ export const ImpactSection = ({
   theme = "light",
   title,
   description,
+  eyebrow = "Our impact",
   items,
 }: ImpactSectionProps) => {
   const isDark = theme === "dark";
@@ -26,7 +28,7 @@ export const ImpactSection = ({
     >
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">
-          Our impact
+          {eyebrow}
         </p>
         <h3
           className={`mt-2 text-2xl font-semibold tracking-tight ${

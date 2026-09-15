@@ -1,52 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Modal } from "../components/ui/Modal";
 import { LogControls } from "../components/daily/LogControls";
 import { LogSummaryCards } from "../components/daily/LogSummaryCards";
 import { LogTable } from "../components/daily/LogTable";
 import { AddBatchModal } from "../components/daily/AddBatchModal";
+import { PrepSheetScannerModal } from "../components/daily/PrepSheetScannerModal";
 import { menuRepository } from "../repositories/menuRepository";
 import { recordRepository } from "../repositories/recordRepository";
 import { MenuItem } from "../models/Menu";
-
-const CameraIcon = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-    />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M12 4v16m8-8H4"
-    />
-  </svg>
-);
 
 interface ShiftLogRow {
   id: string;
@@ -61,6 +21,9 @@ interface ShiftLogRow {
   wasteQty: number;
   recycleQty: number;
   wasteReason: string;
+  notes: string;
+  shelfLifeHours: number;
+  expirationAt: string;
 }
 
 interface DailyLogProps {
@@ -72,7 +35,7 @@ interface DailyLogProps {
 export const DailyLog: React.FC<DailyLogProps> = ({
   theme = "light",
   language = "en",
-  companyName = "WiseServe Outlet",
+  companyName: _companyName = "WiseServe Outlet",
 }) => {
   // ... rest of your DailyLog component code
   const isDark = theme === "dark";
@@ -101,22 +64,14 @@ export const DailyLog: React.FC<DailyLogProps> = ({
 
   // Modal States
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
-  const [scanFile, setScanFile] = useState<File | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newBatchForm, setNewBatchForm] = useState({
     menuItemId: 0,
     prepTime: "10:30 AM",
     preparedQty: 10,
-    wasteQty: 0,
-    recycleQty: 0,
-    wasteReason: WASTE_REASONS[0] || "Expired / Spoiled",
+    notes: "",
   });
-
-  useEffect(() => {
-    fetchMenu();
-  }, [language]);
 
   const fetchMenu = async () => {
     try {
@@ -130,6 +85,10 @@ export const DailyLog: React.FC<DailyLogProps> = ({
     }
   };
 
+  useEffect(() => {
+    void Promise.resolve().then(fetchMenu);
+  }, [language]);
+
   const handleOpenAddModal = () => {
     const currentTime = new Date().toLocaleTimeString([], {
       hour: "2-digit",
@@ -139,11 +98,19 @@ export const DailyLog: React.FC<DailyLogProps> = ({
       menuItemId: availableMenuItems[0]?.id || 0,
       prepTime: currentTime,
       preparedQty: 10,
-      wasteQty: 0,
-      recycleQty: 0,
-      wasteReason: WASTE_REASONS[0] || "Expired / Spoiled",
+      notes: "",
     });
     setIsAddModalOpen(true);
+  };
+
+  const calculateExpirationAt = (prepTime: string, shelfLifeHours: number) => {
+    const prepDate = /^\d{2}:\d{2}$/.test(prepTime)
+      ? new Date(`${shiftDate}T${prepTime}`)
+      : new Date(`${shiftDate} ${prepTime}`);
+
+    if (Number.isNaN(prepDate.getTime())) return "";
+    prepDate.setHours(prepDate.getHours() + shelfLifeHours);
+    return prepDate.toISOString();
   };
 
   const handleManualAddBatch = (e: React.FormEvent) => {
@@ -164,18 +131,35 @@ export const DailyLog: React.FC<DailyLogProps> = ({
       costToProduce: selectedItem.costToProduce || 0,
       prepTime: newBatchForm.prepTime,
       preparedQty: Number(newBatchForm.preparedQty) || 0,
-      soldQty: selectedItem.soldQty || 0,
-      wasteQty: Number(newBatchForm.wasteQty) || 0,
-      recycleQty: Number(newBatchForm.recycleQty) || 0,
-      wasteReason: newBatchForm.wasteReason,
+      soldQty: 0,
+      wasteQty: 0,
+      recycleQty: 0,
+      wasteReason: WASTE_REASONS[0] || "Expired / Spoiled",
+      notes: newBatchForm.notes,
+      shelfLifeHours: selectedItem.shelfLifeHours,
+      expirationAt: calculateExpirationAt(
+        newBatchForm.prepTime,
+        selectedItem.shelfLifeHours,
+      ),
     };
 
     setRows((prev) => [newRow, ...(prev || [])]);
     setIsAddModalOpen(false);
   };
 
-  const handleRemoveRow = (id: string) => {
-    setRows((prev) => (prev || []).filter((r) => r.id !== id));
+  const handleRemoveRow = async (id: string) => {
+    try {
+      await recordRepository.deleteRecord(id);
+      setRows((prev) => (prev || []).filter((r) => r.id !== id));
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to delete batch record.",
+      );
+    }
+  };
+
+  const handleSaveLogEdits = async (editedRows: Array<ShiftLogRow>) => {
+    setRows(editedRows);
   };
 
   const handleRowChange = (
@@ -198,9 +182,22 @@ export const DailyLog: React.FC<DailyLogProps> = ({
               itemName: selectedItem.name,
               category: selectedItem.category,
               costToProduce: selectedItem.costToProduce || 0,
-              soldQty: selectedItem.soldQty || 0,
+              soldQty: row.soldQty || 0,
+              shelfLifeHours: selectedItem.shelfLifeHours,
+              expirationAt: calculateExpirationAt(
+                row.prepTime,
+                selectedItem.shelfLifeHours,
+              ),
             };
           }
+        }
+
+        if (field === "prepTime") {
+          return {
+            ...row,
+            prepTime: value,
+            expirationAt: calculateExpirationAt(value, row.shelfLifeHours),
+          };
         }
 
         return { ...row, [field]: value };
@@ -208,38 +205,50 @@ export const DailyLog: React.FC<DailyLogProps> = ({
     );
   };
 
-  const handleScanPrepSheet = () => {
-    if (!scanFile || availableMenuItems.length === 0) return;
-    setIsScanning(true);
+  const handleScanImport = (
+    scannedItems: Array<{
+      itemName: string;
+      preparedQty: number;
+      soldQty: number;
+      wasteReason: string;
+    }>,
+  ) => {
+    const scannedRows = scannedItems.map((item, index) => {
+      const selectedItem =
+        availableMenuItems.find(
+          (menuItem) =>
+            menuItem.name.toLowerCase() === item.itemName.toLowerCase(),
+        ) ?? availableMenuItems[0];
 
-    setTimeout(() => {
-      const scannedRows: ShiftLogRow[] = [
-        {
-          id: Date.now().toString() + "1",
-          batchId: "#B108",
-          menuItemId: availableMenuItems[0]?.id || 1,
-          itemName: availableMenuItems[0]?.name || "Item 1",
-          category: availableMenuItems[0]?.category || "Mains",
-          costToProduce: availableMenuItems[0]?.costToProduce || 5,
-          prepTime: "10:30 AM",
-          preparedQty: 40,
-          soldQty: availableMenuItems[0]?.soldQty || 30,
-          wasteQty: 2,
-          recycleQty: 8,
-          wasteReason: WASTE_REASONS[0] || "Expired / Spoiled",
-        },
-      ];
+      return {
+        id: `${Date.now()}-${index}`,
+        batchId: `#B${Math.floor(100 + Math.random() * 900)}`,
+        menuItemId: selectedItem?.id ?? 0,
+        itemName: selectedItem?.name ?? item.itemName,
+        category: selectedItem?.category ?? "General",
+        costToProduce: selectedItem?.costToProduce ?? 0,
+        prepTime: "10:30 AM",
+        preparedQty: item.preparedQty,
+        soldQty: item.soldQty,
+        wasteQty: Math.max(0, item.preparedQty - item.soldQty),
+        recycleQty: 0,
+        wasteReason: item.wasteReason || WASTE_REASONS[0],
+        notes: "",
+        shelfLifeHours: selectedItem?.shelfLifeHours ?? 24,
+        expirationAt: calculateExpirationAt(
+          "10:30 AM",
+          selectedItem?.shelfLifeHours ?? 24,
+        ),
+      } satisfies ShiftLogRow;
+    });
 
-      setRows((prev) => [...scannedRows, ...(prev || [])]);
-      setIsScanning(false);
-      setIsScanModalOpen(false);
-      setScanFile(null);
-      setSuccessMessage(
-        isBM
-          ? "Data Kitchen Prep Sheet berjaya diekstrak melalui OCR!"
-          : "Kitchen Prep Sheet data successfully extracted via OCR!",
-      );
-    }, 1500);
+    setRows((prev) => [...scannedRows, ...prev]);
+    setIsScanModalOpen(false);
+    setSuccessMessage(
+      isBM
+        ? "Data Kitchen Prep Sheet berjaya diekstrak melalui OCR!"
+        : "Kitchen Prep Sheet data successfully extracted via OCR!",
+    );
   };
 
   // Safe Calculations
@@ -281,12 +290,15 @@ export const DailyLog: React.FC<DailyLogProps> = ({
           batchId: r.batchId,
           menuItemId: r.menuItemId,
           prepTime: r.prepTime,
+          prepQuantity: r.preparedQty,
           preparedQty: r.preparedQty,
           soldQty: r.soldQty,
           wasteQty: r.wasteQty,
           recycleQty: r.recycleQty,
           wasteCost: r.wasteCost,
           wasteReason: r.wasteReason,
+          expirationAt: r.expirationAt,
+          notes: r.notes,
         })),
       };
 
@@ -364,12 +376,12 @@ export const DailyLog: React.FC<DailyLogProps> = ({
           name: item.name,
           category: item.category,
           costToProduce: item.costToProduce,
-          soldQty: item.soldQty,
+          shelfLifeHours: item.shelfLifeHours,
         }))}
         wasteReasons={WASTE_REASONS}
         onRowChange={handleRowChange}
         onRemoveRow={handleRemoveRow}
-        onAddClick={handleOpenAddModal}
+        onSaveEdits={handleSaveLogEdits}
         onSubmit={handleSubmitLog}
         isSubmitting={isSubmitting}
       />
@@ -381,58 +393,16 @@ export const DailyLog: React.FC<DailyLogProps> = ({
         onClose={() => setIsAddModalOpen(false)}
         availableMenuItems={availableMenuItems}
         newBatchForm={newBatchForm}
-        wasteReasons={WASTE_REASONS}
         onFormChange={setNewBatchForm}
         onSubmit={handleManualAddBatch}
       />
 
-      {/* Modal OCR Kitchen Prep Sheet Scanner */}
-      <Modal
-        theme={theme}
+      <PrepSheetScannerModal
         isOpen={isScanModalOpen}
         onClose={() => setIsScanModalOpen(false)}
-        title={
-          isBM
-            ? "Imbas Kitchen Prep Sheet (OCR)"
-            : "Scan Kitchen Prep Sheet (OCR)"
-        }
-      >
-        <div className="space-y-4">
-          <p
-            className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
-          >
-            {isBM
-              ? "Muat naik imej atau video borang Kitchen Prep Sheet bertulis tangan/cetakan untuk mengekstrak Batch ID, Masa Prep, dan Kuantiti secara automatik."
-              : "Upload a printed/handwritten Kitchen Prep Sheet image or video to automatically extract Batch IDs, Prep Times, and Quantities."}
-          </p>
-          <input
-            type="file"
-            accept="image/*,video/*,.mp4,.mov,.webm"
-            onChange={(e) => e.target.files && setScanFile(e.target.files[0])}
-            className={`block w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 ${
-              isDark
-                ? "text-slate-300 file:bg-slate-800 file:text-slate-200"
-                : "text-slate-500 file:bg-slate-100 file:text-slate-700"
-            }`}
-          />
-          {scanFile && (
-            <Button
-              theme={theme}
-              onClick={handleScanPrepSheet}
-              disabled={isScanning}
-              className="w-full rounded-xl text-xs"
-            >
-              {isScanning
-                ? isBM
-                  ? "Menganalisis Borang Dapur..."
-                  : "Extracting Kitchen Data..."
-                : isBM
-                  ? "Ekstrak Data Prep Sheet"
-                  : "Extract Prep Data"}
-            </Button>
-          )}
-        </div>
-      </Modal>
+        onScan={recordRepository.scanReceipt}
+        onImport={handleScanImport}
+      />
     </div>
   );
 };

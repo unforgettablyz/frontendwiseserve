@@ -7,13 +7,12 @@ interface AgreementModalProps {
 }
 
 export const AgreementModal = ({
-  theme = "light",
+  theme: _theme = "light",
   agreements,
   selectedAgreement,
   onSelectAgreement,
   onClose,
 }: AgreementModalProps) => {
-  const isDark = theme === "dark";
   const activeAgreement =
     agreements.find((agreement) => agreement.id === selectedAgreement) ??
     agreements[0];

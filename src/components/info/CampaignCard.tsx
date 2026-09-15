@@ -8,6 +8,8 @@ interface CampaignCardProps {
   category: string;
   period: string;
   active?: boolean;
+  activeLabel?: string;
+  inactiveLabel?: string;
 }
 
 export const CampaignCard = ({
@@ -18,6 +20,8 @@ export const CampaignCard = ({
   category,
   period,
   active = false,
+  activeLabel = "Active",
+  inactiveLabel = "Scheduled",
 }: CampaignCardProps) => {
   const isDark = theme === "dark";
 
@@ -44,7 +48,7 @@ export const CampaignCard = ({
                 : "bg-slate-100 text-slate-600"
           }`}
         >
-          {active ? "Active" : "Scheduled"}
+          {active ? activeLabel : inactiveLabel}
         </span>
       </div>
 

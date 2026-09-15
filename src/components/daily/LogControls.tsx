@@ -70,7 +70,11 @@ export const LogControls = ({
         type="date"
         value={shiftDate}
         onChange={(e) => onShiftDateChange(e.target.value)}
-        className="w-auto rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-400"
+        className={`h-[38px] w-auto rounded-xl border px-3 py-2 text-xs font-semibold leading-[18px] focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+          isDark
+            ? "border-slate-700 bg-slate-800 text-slate-100"
+            : "border-slate-200 bg-white text-slate-700"
+        }`}
       />
 
       <select

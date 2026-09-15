@@ -6,7 +6,8 @@ interface ExpirationCardProps {
   amount: string;
   expiresIn: string;
   preparedAt: string;
-  isDark?: boolean;
+  preparedLabel?: string;
+  expiresLabel?: string;
 }
 
 export const ExpirationCard = ({
@@ -15,6 +16,8 @@ export const ExpirationCard = ({
   amount,
   expiresIn,
   preparedAt,
+  preparedLabel = "Prepared",
+  expiresLabel = "Expires in",
 }: ExpirationCardProps) => {
   const isDark = theme === "dark";
 
@@ -41,7 +44,7 @@ export const ExpirationCard = ({
           <p
             className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
           >
-            Prepared {preparedAt}
+            {preparedLabel} {preparedAt}
           </p>
         </div>
       </div>
@@ -54,7 +57,9 @@ export const ExpirationCard = ({
         >
           {amount}
         </p>
-        <p className="text-xs text-amber-500">Expires in {expiresIn}</p>
+        <p className="text-xs text-amber-500">
+          {expiresLabel} {expiresIn}
+        </p>
       </div>
     </Card>
   );

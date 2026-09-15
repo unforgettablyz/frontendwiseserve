@@ -10,6 +10,7 @@ interface MenuScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportItems: (items: ScannedMenuItem[]) => void;
+  onScanMenu: (file: File) => Promise<ScannedMenuItem[]>;
   theme?: Theme;
 }
 
@@ -79,6 +80,7 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
   isOpen,
   onClose,
   onImportItems,
+  onScanMenu,
   theme = "light",
 }) => {
   const isDark = theme === "dark";
@@ -92,39 +94,19 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
     if (file) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      simulateAiScan(file);
+      void scanMenu(file);
     }
   };
 
-  const simulateAiScan = (_file: File) => {
+  const scanMenu = async (file: File) => {
     setIsScanning(true);
-    setTimeout(() => {
-      const mockParsedData: ScannedMenuItem[] = [
-        {
-          tempId: "1",
-          name: "Tonkotsu Ramen",
-          category: "Mains",
-          price: 14.5,
-          costToProduce: 4.8,
-        },
-        {
-          tempId: "2",
-          name: "Chicken Gyoza (5pcs)",
-          category: "Appetizers",
-          price: 6.5,
-          costToProduce: 1.9,
-        },
-        {
-          tempId: "3",
-          name: "Matcha Cheesecake",
-          category: "Dessert",
-          price: 5.5,
-          costToProduce: 1.5,
-        },
-      ];
-      setStagedItems(mockParsedData);
+    try {
+      setStagedItems(await onScanMenu(file));
+    } catch {
+      setStagedItems([]);
+    } finally {
       setIsScanning(false);
-    }, 1800);
+    }
   };
 
   const handleUpdateStagedItem = (
@@ -160,7 +142,7 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Import Menu Items via Vision AI"
+      title="Scan Physical Menu"
       theme={theme}
     >
       <div className="space-y-6">
@@ -180,14 +162,14 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                     isDark ? "text-slate-200" : "text-slate-700"
                   }`}
                 >
-                  Drag & drop menu or recipe sheet photo
+                  Upload a physical menu photo
                 </p>
                 <p
                   className={`text-xs mt-1 ${
                     isDark ? "text-slate-400" : "text-slate-500"
                   }`}
                 >
-                  Supports PNG, JPG, or PDF up to 10MB
+                  Supports PNG, JPG, or PDF up to 10MB for menu OCR
                 </p>
               </div>
               <label className="cursor-pointer bg-slate-900 text-white hover:bg-slate-800 text-xs font-medium px-4 py-2 rounded-lg transition-colors">
@@ -257,7 +239,7 @@ export const MenuScannerModal: React.FC<MenuScannerModalProps> = ({
                 isDark ? "text-slate-300" : "text-slate-600"
               }`}
             >
-              Parsing dish names, prices, and prep costs...
+              Extracting menu names, prices, costs, and shelf life...
             </p>
           </div>
         )}

@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MenuManagerView } from "../components/menu/MenuManagerView";
 import { menuRepository } from "../repositories/menuRepository";
-import { type CategoryType, type MenuItem } from "../models/Menu";
+import {
+  type CategoryType,
+  type MenuItem,
+  type ScannedMenuItem,
+} from "../models/Menu";
 
 interface MenuManagerProps {
   theme?: "light" | "dark";
@@ -20,24 +24,10 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isMenuScannerOpen, setIsMenuScannerOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [newItem, setNewItem] = useState<Partial<MenuItem>>({
-    name: "",
-    category: "Mains",
-    sellingPrice: 0,
-    costToProduce: 0,
-    soldQty: 0,
-  });
-
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanFile, setScanFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    void fetchMenu();
-  }, []);
 
   const categories = useMemo(
     () => [
@@ -71,7 +61,9 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
         ...item,
         sellingPrice: item.sellingPrice ?? item.price ?? 0,
         costToProduce: item.costToProduce ?? item.cost ?? 0,
-        soldQty: item.soldQty ?? 0,
+        shelfLifeHours: Number(
+          item.shelfLifeHours ?? item.shelf_life_hours ?? 24,
+        ),
       }));
       setMenuItems(enrichedData);
     } catch (err) {
@@ -86,21 +78,27 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
     }
   };
 
-  const handleScanReceipt = () => {
-    if (!scanFile) return;
-    setIsScanning(true);
+  useEffect(() => {
+    void Promise.resolve().then(fetchMenu);
+  }, []);
 
-    setTimeout(() => {
-      const updatedList = menuItems.map((item) => ({
-        ...item,
-        soldQty: (item.soldQty || 0) + Math.floor(Math.random() * 15) + 5,
-      }));
+  const handleScanMenu = (file: File) => menuRepository.scanMenu(file);
 
-      setMenuItems(updatedList);
-      setIsScanning(false);
-      setIsReceiptModalOpen(false);
-      setScanFile(null);
-    }, 1500);
+  const handleImportMenuItems = async (items: ScannedMenuItem[]) => {
+    await Promise.all(
+      items.map((item) =>
+        menuRepository.create({
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          sellingPrice: item.price,
+          costToProduce: item.costToProduce,
+          shelfLifeHours: item.shelfLifeHours,
+          isActive: true,
+        }),
+      ),
+    );
+    await fetchMenu();
   };
 
   const handleOpenEdit = (item: MenuItem) => {
@@ -108,73 +106,93 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingItem) return;
-
-    setMenuItems((prev) =>
-      prev.map((i) => (i.id === editingItem.id ? editingItem : i)),
-    );
-    setIsEditModalOpen(false);
-    setEditingItem(null);
+  const handleSaveEdit = async (itemData: Partial<MenuItem>) => {
+    if (!editingItem || !itemData.name) return;
+    try {
+      await menuRepository.update(editingItem.id, itemData);
+      await fetchMenu();
+      setIsEditModalOpen(false);
+      setEditingItem(null);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to update menu item.",
+      );
+    }
   };
 
-  const handleAddNewItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newItem.name) return;
+  const handleAddNewItem = async (itemData: Partial<MenuItem>) => {
+    if (!itemData.name) return;
 
-    const createdItem: MenuItem = {
-      id: Date.now(),
-      name: newItem.name,
-      category: (newItem.category as CategoryType) || "Mains",
-      sellingPrice: newItem.sellingPrice || 0,
-      costToProduce: newItem.costToProduce || 0,
-      soldQty: newItem.soldQty || 0,
-      isActive: true,
-    };
+    try {
+      await menuRepository.create({
+        name: itemData.name,
+        category: (itemData.category as CategoryType) || "Mains",
+        price: itemData.sellingPrice || 0,
+        sellingPrice: itemData.sellingPrice || 0,
+        costToProduce: itemData.costToProduce || 0,
+        shelfLifeHours: itemData.shelfLifeHours || 24,
+        isActive: true,
+      });
+      await fetchMenu();
+      setIsAddModalOpen(false);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to create menu item.",
+      );
+    }
+  };
 
-    setMenuItems((prev) => [createdItem, ...prev]);
-    setIsAddModalOpen(false);
-    setNewItem({
-      name: "",
-      category: "Mains",
-      sellingPrice: 0,
-      costToProduce: 0,
-      soldQty: 0,
+  const handleUpdateItems = async (items: MenuItem[]) => {
+    const changedItems = items.filter((item) => {
+      const original = menuItems.find((current) => current.id === item.id);
+      return (
+        original &&
+        (original.name !== item.name ||
+          original.category !== item.category ||
+          original.sellingPrice !== item.sellingPrice ||
+          original.costToProduce !== item.costToProduce ||
+          original.shelfLifeHours !== item.shelfLifeHours)
+      );
     });
+
+    await Promise.all(
+      changedItems.map((item) => menuRepository.update(item.id, item)),
+    );
+    await fetchMenu();
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    await menuRepository.delete(id);
+    setMenuItems((items) => items.filter((item) => item.id !== id));
   };
 
   return (
     <MenuManagerView
       theme={theme}
       language={language}
-      menuItems={menuItems}
       filteredItems={filteredItems}
       categories={categories}
       searchTerm={searchTerm}
       selectedCategory={selectedCategory}
       isLoading={isLoading}
       error={error}
-      isReceiptModalOpen={isReceiptModalOpen}
+      isMenuScannerOpen={isMenuScannerOpen}
       isEditModalOpen={isEditModalOpen}
       isAddModalOpen={isAddModalOpen}
       editingItem={editingItem}
-      newItem={newItem}
-      scanFile={scanFile}
-      isScanning={isScanning}
       onSearchChange={setSearchTerm}
       onCategoryChange={setSelectedCategory}
       onFetchMenu={fetchMenu}
-      onReceiptModalOpenChange={setIsReceiptModalOpen}
+      onMenuScannerOpenChange={setIsMenuScannerOpen}
       onEditModalOpenChange={setIsEditModalOpen}
-      onFileChange={setScanFile}
-      onScanReceipt={handleScanReceipt}
+      onScanMenu={handleScanMenu}
+      onImportMenuItems={handleImportMenuItems}
       onOpenEdit={handleOpenEdit}
-      onSaveEdit={handleSaveEdit}
-      onAddNewItem={handleAddNewItem}
+      onSaveItem={handleSaveEdit}
+      onCreateItem={handleAddNewItem}
       onAddModalOpenChange={setIsAddModalOpen}
-      onEditingItemChange={setEditingItem}
-      onNewItemChange={setNewItem}
+      onUpdateItems={handleUpdateItems}
+      onDeleteItem={handleDeleteItem}
     />
   );
 };

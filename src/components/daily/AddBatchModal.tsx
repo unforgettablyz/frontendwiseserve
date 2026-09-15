@@ -12,18 +12,13 @@ interface AddBatchModalProps {
     menuItemId: number;
     prepTime: string;
     preparedQty: number;
-    wasteQty: number;
-    recycleQty: number;
-    wasteReason: string;
+    notes: string;
   };
-  wasteReasons: string[];
   onFormChange: (next: {
     menuItemId: number;
     prepTime: string;
     preparedQty: number;
-    wasteQty: number;
-    recycleQty: number;
-    wasteReason: string;
+    notes: string;
   }) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -35,7 +30,6 @@ export const AddBatchModal = ({
   onClose,
   availableMenuItems,
   newBatchForm,
-  wasteReasons,
   onFormChange,
   onSubmit,
 }: AddBatchModalProps) => {
@@ -81,61 +75,31 @@ export const AddBatchModal = ({
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            theme={theme}
-            label={isBM ? "Masa Prep Dapur" : "Kitchen Prep Time"}
-            type="time"
-            value={newBatchForm.prepTime}
-            onChange={(e) =>
-              onFormChange({ ...newBatchForm, prepTime: e.target.value })
-            }
-            required
-          />
-          <Input
-            theme={theme}
-            label={isBM ? "Kuantiti Masak (Prep Qty)" : "Prep Quantity"}
-            type="number"
-            min="1"
-            value={newBatchForm.preparedQty}
-            onChange={(e) =>
-              onFormChange({
-                ...newBatchForm,
-                preparedQty: Number(e.target.value),
-              })
-            }
-            required
-          />
-        </div>
+        <Input
+          theme={theme}
+          label={isBM ? "Masa Prep Dapur" : "Kitchen Prep Time"}
+          type="time"
+          value={newBatchForm.prepTime}
+          onChange={(e) =>
+            onFormChange({ ...newBatchForm, prepTime: e.target.value })
+          }
+          required
+        />
 
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            theme={theme}
-            label={isBM ? "Kuantiti Recycle (Baki Elok)" : "Recycle Qty"}
-            type="number"
-            min="0"
-            value={newBatchForm.recycleQty}
-            onChange={(e) =>
-              onFormChange({
-                ...newBatchForm,
-                recycleQty: Number(e.target.value),
-              })
-            }
-          />
-          <Input
-            theme={theme}
-            label={isBM ? "Kuantiti Sisa (Buang)" : "Waste Quantity"}
-            type="number"
-            min="0"
-            value={newBatchForm.wasteQty}
-            onChange={(e) =>
-              onFormChange({
-                ...newBatchForm,
-                wasteQty: Number(e.target.value),
-              })
-            }
-          />
-        </div>
+        <Input
+          theme={theme}
+          label={isBM ? "Kuantiti Masak (Prep Qty)" : "Prep Quantity"}
+          type="number"
+          min="1"
+          value={newBatchForm.preparedQty}
+          onChange={(e) =>
+            onFormChange({
+              ...newBatchForm,
+              preparedQty: Number(e.target.value),
+            })
+          }
+          required
+        />
 
         <div>
           <label
@@ -143,28 +107,25 @@ export const AddBatchModal = ({
               isDark ? "text-slate-300" : "text-slate-700"
             }`}
           >
-            {isBM ? "Sebab Sisa / Kerosakan" : "Waste Reason"}
+            {isBM ? "Nota / Catatan (Pilihan)" : "Notes / Remarks (Optional)"}
           </label>
-          <select
-            value={newBatchForm.wasteReason}
+          <textarea
+            value={newBatchForm.notes}
             onChange={(e) =>
-              onFormChange({
-                ...newBatchForm,
-                wasteReason: e.target.value,
-              })
+              onFormChange({ ...newBatchForm, notes: e.target.value })
             }
-            className={`w-full rounded-xl border p-2 text-xs ${
+            rows={3}
+            placeholder={
+              isBM
+                ? "Lokasi simpanan, arahan khas, atau butiran prep"
+                : "Storage location, special instructions, or prep details"
+            }
+            className={`w-full resize-y rounded-xl border p-2 text-xs outline-none focus:ring-2 focus:ring-slate-400 ${
               isDark
-                ? "border-slate-700 bg-slate-800 text-slate-100"
-                : "border-slate-200 bg-white text-slate-800"
+                ? "border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500"
+                : "border-slate-200 bg-white text-slate-800 placeholder:text-slate-400"
             }`}
-          >
-            {wasteReasons.map((reason) => (
-              <option key={reason} value={reason}>
-                {reason}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="flex justify-end gap-2 pt-3">

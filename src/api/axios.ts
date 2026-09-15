@@ -1,5 +1,8 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
+// Temporary visual-preview mode. Set VITE_ENABLE_API=true when the backend is ready.
+export const API_ENABLED = import.meta.env.VITE_ENABLE_API === "true";
+
 export const api = axios.create({
   baseURL: "http://localhost:4000/api",
   headers: {
